@@ -1,8 +1,9 @@
-import { Navigate, type RouteObject } from "react-router-dom"
+import { type RouteObject } from "react-router-dom"
+import Login from "../Auth/Login"
 
 const AuthRoute: RouteObject = {
   path: '/',
-  element: <Navigate to='/login' />,
+  element: <Login />,
 }
 
 export default AuthRoute

@@ -1,7 +1,9 @@
-const App = () => {
+import { RouterProvider } from "react-router-dom"
+import { router } from "./Pages/Routes"
+
+function App() {
   return (
-    
-    <Ro
+    <RouterProvider router={router} />
   )
 }
 
