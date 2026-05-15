@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,15 +17,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/users": "Users",
-  "/products": "Products",
-  "/invoices": "Invoices",
-  "/expenses": "Expenses",
-  "/profile": "Profile",
-  "/settings": "Settings",
+  "/admin/dashboard": "Dashboard",
+  "/admin/users": "Users",
+  "/admin/products": "Products",
+  "/admin/invoices": "Invoices",
+  "/admin/expenses": "Expenses",
+  "/admin/profile": "Profile",
+  "/admin/settings": "Settings",
+  "/admin/audit-logs": "Audit Logs",
 };
 
 export default function Topbar() {
@@ -40,10 +42,11 @@ export default function Topbar() {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white shadow-sm">
+    <header className="sticky top-0 z-30 border-b m-5 border-slate-200 bg-white shadow-sm">
       <div className="flex h-[70px] items-center justify-between px-5 sm:px-6 lg:px-8">
         {/* Left side */}
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="-ml-2 mr-2" />
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
             <Grid2X2 className="h-5 w-5" />
           </div>
@@ -77,6 +80,7 @@ export default function Topbar() {
             <DropdownMenuTrigger asChild>
               <button className="rounded-full outline-none ring-offset-2 transition hover:ring-2 hover:ring-slate-200">
                 <Avatar className="h-10 w-10">
+                  <AvatarImage src="https://github.com/shadcn.png" alt="Admin User" />
                   <AvatarFallback className="bg-red-600 text-sm font-semibold text-white">
                     AU
                   </AvatarFallback>

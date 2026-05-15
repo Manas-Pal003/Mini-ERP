@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -20,20 +22,17 @@ import {
   User,
   Settings,
   LogOut,
+  ChevronDown,
+  FileText,
 } from "lucide-react";
 
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: LayoutDashboard,
-  },
-  {
-    title: "Users",
-    url: "/admin/users",
-    icon: Users,
   },
   {
     title: "Products",
@@ -52,12 +51,31 @@ const menuItems = [
   },
 ];
 
-const accountItems = [
+const userSubMenus = [
   {
-    title: "Profile",
-    url: "/admin/profile",
-    icon: User,
+    title: "Manage Admins",
+    url: "/admin/users/admins",
   },
+  {
+    title: "Staffs",
+    url: "/admin/users/staffs",
+  },
+  {
+    title: "Accountants",
+    url: "/admin/users/accountants",
+  },
+  {
+    title: "Managers",
+    url: "/admin/users/managers",
+  },
+];
+
+const accountItems = [
+  // {
+  //   title: "Profile",
+  //   url: "/admin/profile",
+  //   icon: User,
+  // },
   {
     title: "Settings",
     url: "/admin/settings",
@@ -67,21 +85,28 @@ const accountItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [usersOpen, setUsersOpen] = useState(true);
+
+  const isUsersActive = location.pathname.startsWith("/admin/users");
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/login");
+  };
 
   return (
-    <Sidebar
-      variant="inset"
-      collapsible="icon"
-    >
+    <Sidebar variant="inset" collapsible="icon">
       {/* Header */}
-      <SidebarHeader className="border-b">
+      <SidebarHeader className="border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-white font-bold text-xl">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-xl font-bold text-white">
             ERP
           </div>
 
           <div className="flex flex-col">
-            <span className="text-lg font-bold">
+            <span className="text-lg font-bold text-slate-950 dark:text-slate-50">
               Mini ERP
             </span>
 
@@ -96,58 +121,127 @@ const AppSidebar = () => {
       <SidebarContent className="px-3 py-4">
         {/* Main Menu */}
         <SidebarGroup className="mb-6">
-          <SidebarGroupLabel className="text-xs font-medium px-2 text-base">
+          <SidebarGroupLabel className="px-2 text-xs font-medium text-slate-500">
             Main Menu
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
-            <SidebarMenu >
-              {menuItems.map((item) => {
-                const isActive =
-                  location.pathname === item.url;
+            <SidebarMenu>
+              {/* Dashboard */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === "/admin/dashboard"}
+                  className="h-12 text-base"
+                >
+                  <Link to="/admin/dashboard">
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Users Dropdown */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  type="button"
+                  isActive={isUsersActive}
+                  onClick={() => setUsersOpen(!usersOpen)}
+                  className="h-12 text-base"
+                >
+                  <Users className="h-5 w-5" />
+
+                  <span>Users</span>
+
+                  <ChevronDown
+                    className={`ml-auto h-4 w-4 transition-transform ${
+                      usersOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </SidebarMenuButton>
+
+                {usersOpen && (
+                  <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-slate-800">
+                    <div className="space-y-1">
+                      {userSubMenus.map((item) => {
+                        const isActive = location.pathname === item.url;
+
+                        return (
+                          <Link
+                            key={item.title}
+                            to={item.url}
+                            className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
+                              isActive
+                                ? "bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white"
+                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+                            }`}
+                          >
+                            {item.title}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </SidebarMenuItem>
+
+              {/* Other Main Menu Items */}
+              {menuItems.slice(1).map((item) => {
+                const isActive = location.pathname === item.url;
 
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                     className="h-12 text-base"
                       asChild
                       isActive={isActive}
+                      className="h-12 text-base"
                     >
                       <Link to={item.url}>
-                        <item.icon className="h-6 w-6" />
-
+                        <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}
+
+              {/* Audit Logs */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === "/admin/audit-logs"}
+                  className="h-12 text-base"
+                >
+                  <Link to="/admin/audit-logs">
+                    <FileText className="h-5 w-5" />
+                    <span>Audit Logs</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* Account */}
         <SidebarGroup className="mb-6">
-          <SidebarGroupLabel className="text-xs font-medium px-2 text-base">
+          <SidebarGroupLabel className="px-2 text-xs font-medium text-slate-500">
             Account
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>
               {accountItems.map((item) => {
-                const isActive =
-                  location.pathname === item.url;
+                const isActive = location.pathname === item.url;
 
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                       className="h-12 text-base"
+                      className="h-12 text-base"
                     >
                       <Link to={item.url}>
-                        <item.icon className="h-6 w-6" />
-
+                        <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -160,12 +254,42 @@ const AppSidebar = () => {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t">
+      <SidebarFooter className="border-t border-slate-200 p-3 dark:border-slate-800">
+        <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 overflow-hidden rounded-full bg-black">
+              <img
+                src="https://i.pravatar.cc/100?img=12"
+                alt="System Admin"
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-950 dark:text-slate-50">
+                System Admin
+              </p>
+
+              <div className="mt-1 flex flex-wrap gap-1">
+                <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-blue-600 dark:bg-blue-950 dark:text-blue-300">
+                  Admin
+                </span>
+
+                <span className="rounded bg-purple-100 px-2 py-0.5 text-[10px] font-semibold text-purple-600 dark:bg-purple-950 dark:text-purple-300">
+                  All Projects
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="h-12 text-base">
-              <LogOut className="h-6 w-6" />
-
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className="h-12 text-base text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
+            >
+              <LogOut className="h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

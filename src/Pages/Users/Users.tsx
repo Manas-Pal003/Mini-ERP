@@ -1,369 +1,567 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
-  MoreHorizontal,
+  UsersRound,
+  UserCheck,
+  UserX,
+  ShieldCheck,
   Plus,
-  Search,
-  SlidersHorizontal,
-  Trash2,
-  Pencil,
-  Eye,
+  MoreVertical,
 } from "lucide-react";
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
-type UserRole = "Admin" | "Manager" | "Staff" | "Customer";
-type UserStatus = "Active" | "Inactive" | "Suspended";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+type UserRole = "Admin" | "Manager" | "Staff" | "Accountant";
 
 type User = {
   id: string;
   name: string;
   email: string;
-  phone: string;
   role: UserRole;
-  status: UserStatus;
-  createdAt: string;
+  status: "Active" | "Inactive";
+  joined: string;
+  note?: string;
 };
 
-const initialUsers: User[] = [
+const usersTable: User[] = [
   {
-    id: "USR-001",
-    name: "Admin User",
-    email: "admin@example.com",
-    phone: "9876543210",
-    role: "Admin",
-    status: "Active",
-    createdAt: "2026-05-01",
-  },
-  {
-    id: "USR-002",
+    id: "USR-1001",
     name: "Rohit Sharma",
     email: "rohit@example.com",
-    phone: "9876543211",
     role: "Manager",
     status: "Active",
-    createdAt: "2026-05-04",
+    joined: "14 May 2026",
   },
   {
-    id: "USR-003",
-    name: "Priya Verma",
+    id: "USR-1002",
+    name: "Priya Singh",
     email: "priya@example.com",
-    phone: "9876543212",
+    role: "Admin",
+    status: "Active",
+    joined: "13 May 2026",
+  },
+  {
+    id: "USR-1003",
+    name: "Amit Verma",
+    email: "amit@example.com",
     role: "Staff",
     status: "Inactive",
-    createdAt: "2026-05-06",
+    joined: "12 May 2026",
   },
   {
-    id: "USR-004",
-    name: "Amit Kumar",
-    email: "amit@example.com",
-    phone: "9876543213",
-    role: "Customer",
-    status: "Suspended",
-    createdAt: "2026-05-09",
-  },
-  {
-    id: "USR-005",
-    name: "Neha Singh",
+    id: "USR-1004",
+    name: "Neha Gupta",
     email: "neha@example.com",
-    phone: "9876543214",
     role: "Staff",
     status: "Active",
-    createdAt: "2026-05-11",
+    joined: "11 May 2026",
+  },
+  {
+    id: "USR-1005",
+    name: "Karan Mehta",
+    email: "karan@example.com",
+    role: "Manager",
+    status: "Active",
+    joined: "10 May 2026",
+  },
+  {
+    id: "USR-1006",
+    name: "Sanjay Rao",
+    email: "sanjay@example.com",
+    role: "Accountant",
+    status: "Active",
+    joined: "09 May 2026",
+  },
+  {
+    id: "USR-1007",
+    name: "Meera Iyer",
+    email: "meera@example.com",
+    role: "Accountant",
+    status: "Inactive",
+    joined: "08 May 2026",
   },
 ];
 
-const statusClass: Record<UserStatus, string> = {
-  Active: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  Inactive: "bg-slate-50 text-slate-700 border-slate-200",
-  Suspended: "bg-red-50 text-red-700 border-red-200",
-};
+function StatusBadge({ status }: { status: string }) {
+  const statusClass =
+    status === "Active"
+      ? "bg-green-100 text-green-700"
+      : "bg-red-100 text-red-700";
 
-const roleClass: Record<UserRole, string> = {
-  Admin: "bg-blue-50 text-blue-700 border-blue-200",
-  Manager: "bg-purple-50 text-purple-700 border-purple-200",
-  Staff: "bg-orange-50 text-orange-700 border-orange-200",
-  Customer: "bg-slate-50 text-slate-700 border-slate-200",
-};
+  return (
+    <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
+      {status}
+    </span>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const roleClass =
+    role === "Admin"
+      ? "bg-blue-100 text-blue-700"
+      : role === "Manager"
+      ? "bg-purple-100 text-purple-700"
+      : role === "Accountant"
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-orange-100 text-orange-700";
+
+  return (
+    <span className={`rounded-md px-3 py-1 text-xs font-medium ${roleClass}`}>
+      {role}
+    </span>
+  );
+}
 
 export default function Users() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const location = useLocation();
 
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(search.toLowerCase()) ||
-        user.email.toLowerCase().includes(search.toLowerCase());
+  const [open, setOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem("users");
+    return saved ? JSON.parse(saved) : usersTable;
+  });
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
-      const matchesRole =
-        roleFilter === "all" || user.role === roleFilter;
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "Staff" as UserRole,
+    status: "Active" as User["status"],
+    joined: "",
+    note: "",
+  });
 
-      const matchesStatus =
-        statusFilter === "all" || user.status === statusFilter;
 
-      return matchesSearch && matchesRole && matchesStatus;
+
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
+
+  const getRoleFromPath = (): UserRole | "All" => {
+    if (location.pathname.includes("/admins")) return "Admin";
+    if (location.pathname.includes("/staffs")) return "Staff";
+    if (location.pathname.includes("/accountants")) return "Accountant";
+    if (location.pathname.includes("/managers")) return "Manager";
+
+    return "All";
+  };
+
+  const selectedRole = getRoleFromPath();
+
+  const filteredUsers =
+    selectedRole === "All"
+      ? users
+      : users.filter((user) => user.role === selectedRole);
+
+  const pageTitle =
+    selectedRole === "All"
+      ? "Users"
+      : selectedRole === "Admin"
+      ? "Manage Admins"
+      : selectedRole === "Staff"
+      ? "Staffs"
+      : selectedRole === "Accountant"
+      ? "Accountants"
+      : "Managers";
+
+  const pageDescription =
+    selectedRole === "All"
+      ? "Manage admins, managers, accountants and staff users"
+      : `Manage ${pageTitle.toLowerCase()} in the system`;
+
+  const totalUsers = filteredUsers.length;
+  const activeUsers = filteredUsers.filter((user) => user.status === "Active").length;
+  const inactiveUsers = filteredUsers.filter((user) => user.status === "Inactive").length;
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      role: selectedRole === "All" ? "Staff" : selectedRole,
+      status: "Active",
+      joined: "",
+      note: "",
     });
-  }, [users, search, roleFilter, statusFilter]);
 
-  const handleDelete = () => {
-    if (!deleteUser) return;
+    setEditingUserId(null);
+  };
 
-    setUsers((prev) => prev.filter((user) => user.id !== deleteUser.id));
-    setDeleteUser(null);
+  const handleSaveUser = () => {
+    if (!formData.name || !formData.email || !formData.joined) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    if (editingUserId) {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === editingUserId
+            ? {
+                ...user,
+                name: formData.name,
+                email: formData.email,
+                role: formData.role,
+                status: formData.status,
+                joined: formData.joined,
+                note: formData.note,
+              }
+            : user
+        )
+      );
+    } else {
+      const newUser: User = {
+        id: `USR-${Date.now()}`,
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        status: formData.status,
+        joined: formData.joined,
+        note: formData.note,
+      };
+
+      setUsers((prev) => [newUser, ...prev]);
+    }
+
+    resetForm();
+    setOpen(false);
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUserId(user.id);
+
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      joined: user.joined,
+      note: user.note || "",
+    });
+
+    setOpen(true);
+  };
+
+  const handleDeleteUser = (id: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+
+    if (!confirmDelete) return;
+
+    setUsers((prev) => prev.filter((user) => user.id !== id));
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-950">
-            Users Management
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Manage admin, manager, staff and customer users.
-          </p>
+    <main className="min-h-screen bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
+      <div className="mx-auto max-w-[1600px] space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
+              {pageTitle}
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {pageDescription}
+            </p>
+          </div>
+
+          <Button
+            onClick={() => {
+              resetForm();
+              setOpen(true);
+            }}
+            className="gap-2 rounded-xl bg-blue-600 px-5 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4" />
+            Add User
+          </Button>
         </div>
 
-        <Button className="rounded-xl bg-slate-950 hover:bg-slate-800">
-          <Plus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <CardContent className="flex items-center gap-5 p-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <UsersRound className="h-7 w-7" />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Total Users
+                </p>
+                <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                  {totalUsers}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <CardContent className="flex items-center gap-5 p-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600">
+                <UserCheck className="h-7 w-7" />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Active Users
+                </p>
+                <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                  {activeUsers}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <CardContent className="flex items-center gap-5 p-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                <UserX className="h-7 w-7" />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Inactive Users
+                </p>
+                <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
+                  {inactiveUsers}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <CardContent className="flex items-center gap-5 p-5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
+                <ShieldCheck className="h-7 w-7" />
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Current Section
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-slate-50">
+                  {selectedRole === "All" ? "All Roles" : selectedRole}
+                </h3>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
+              {pageTitle} List
+            </CardTitle>
+
+            <Button variant="outline" className="border-blue-200 text-blue-600">
+              View All
+            </Button>
+          </CardHeader>
+
+          <CardContent>
+            <div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-slate-50 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <th className="px-4 py-4 font-medium">User ID</th>
+                    <th className="px-4 py-4 font-medium">Name</th>
+                    <th className="px-4 py-4 font-medium">Email</th>
+                    <th className="px-4 py-4 font-medium">Role</th>
+                    <th className="px-4 py-4 font-medium">Status</th>
+                    <th className="px-4 py-4 font-medium">Joined</th>
+                    <th className="px-4 py-4 font-medium">Action</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredUsers.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-t border-slate-100 text-sm dark:border-slate-800"
+                    >
+                      <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
+                        {item.id}
+                      </td>
+
+                      <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
+                        {item.name}
+                      </td>
+
+                      <td className="px-4 py-4 text-slate-600 dark:text-slate-400">
+                        {item.email}
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <RoleBadge role={item.role} />
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <StatusBadge status={item.status} />
+                      </td>
+
+                      <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
+                        {item.joined}
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditUser(item)}
+                            className="h-8 rounded-lg border-blue-200 px-3 text-blue-600 hover:bg-blue-50"
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(item.id)}
+                            className="h-8 rounded-lg border-red-200 px-3 text-red-600 hover:bg-red-50"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {filteredUsers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
+                      >
+                        No users found in this section.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Users Table Card */}
-      <Card className="rounded-2xl border-slate-200 shadow-sm">
-        <CardHeader className="border-b border-slate-100">
-          <CardTitle className="text-lg">All Users</CardTitle>
-        </CardHeader>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingUserId ? "Edit User" : "Add New User"}
+            </DialogTitle>
+          </DialogHeader>
 
-        <CardContent className="p-5">
-          {/* Filters */}
-          <div className="mb-5 grid gap-3 md:grid-cols-[1fr_180px_180px]">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-
+          <div className="grid gap-5 py-4">
+            <div className="grid gap-2">
+              <Label>Full Name</Label>
               <Input
-                placeholder="Search by name or email..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="h-10 rounded-xl pl-10"
+                placeholder="Enter full name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
 
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
+            <div className="grid gap-2">
+              <Label>Email Address</Label>
+              <Input
+                type="email"
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
+            </div>
 
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Staff">Staff</SelectItem>
-                <SelectItem value="Customer">Customer</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid gap-2">
+              <Label>Role</Label>
+              <select
+                value={formData.role}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    role: e.target.value as UserRole,
+                  })
+                }
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              >
+                <option value="Admin">Admin</option>
+                <option value="Manager">Manager</option>
+                <option value="Staff">Staff</option>
+                <option value="Accountant">Accountant</option>
+              </select>
+            </div>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-10 rounded-xl">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
+            <div className="grid gap-2">
+              <Label>Status</Label>
+              <select
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value as User["status"],
+                  })
+                }
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
 
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
-                <SelectItem value="Suspended">Suspended</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="grid gap-2">
+              <Label>Joined Date</Label>
+              <Input
+                type="date"
+                value={formData.joined}
+                onChange={(e) =>
+                  setFormData({ ...formData, joined: e.target.value })
+                }
+              />
+            </div>
 
-          {/* Mobile Filter Info */}
-          <div className="mb-4 flex items-center gap-2 text-sm text-slate-500">
-            <SlidersHorizontal className="h-4 w-4" />
-            Showing {filteredUsers.length} users
-          </div>
+            <div className="grid gap-2">
+              <Label>Note</Label>
+              <Textarea
+                placeholder="Optional user note"
+                value={formData.note}
+                onChange={(e) =>
+                  setFormData({ ...formData, note: e.target.value })
+                }
+              />
+            </div>
 
-          {/* Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50">
-                    <TableHead>User</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="w-[80px] text-right">
-                      Action
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
+            <div className="flex justify-end gap-3 pt-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  resetForm();
+                  setOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
 
-                <TableBody>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-slate-950">
-                              {user.name}
-                            </p>
-                            <p className="text-sm text-slate-500">
-                              {user.email}
-                            </p>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-slate-600">
-                          {user.phone}
-                        </TableCell>
-
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`rounded-full ${roleClass[user.role]}`}
-                          >
-                            {user.role}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={`rounded-full ${statusClass[user.status]}`}
-                          >
-                            {user.status}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell className="text-slate-500">
-                          {user.createdAt}
-                        </TableCell>
-
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem
-                                onClick={() => setDeleteUser(user)}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="h-32 text-center text-slate-500"
-                      >
-                        No users found. Try changing your search or filter.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              <Button onClick={handleSaveUser} className="bg-blue-600 hover:bg-blue-700">
+                {editingUserId ? "Update User" : "Save User"}
+              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation */}
-      <AlertDialog
-        open={!!deleteUser}
-        onOpenChange={() => setDeleteUser(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete User?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action will remove{" "}
-              <strong>{deleteUser?.name}</strong> from the users list.
-              This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }
