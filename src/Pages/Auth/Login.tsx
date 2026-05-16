@@ -1,234 +1,302 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+    ArrowRight,
+    Eye,
+    EyeOff,
+    LockKeyhole,
+    Mail,
+    ShieldCheck,
+    Boxes,
+    ReceiptText,
+    Wallet,
+    UsersRound,
+    CheckCircle2,
+} from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import Logo from "../../assets/Logo.png";
 
-import { Loader2, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
-import { Link } from "react-router-dom";
-
-/* -------------------------------------------------------------------------- */
-/*                               Validation Schema                            */
-/* -------------------------------------------------------------------------- */
-
-const loginSchema = z.object({
-    email: z.string().email("Please enter a valid email"),
-    password: z
-        .string()
-        .min(6, "Password must be at least 6 characters"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-/* -------------------------------------------------------------------------- */
-/*                                Mock Users                                  */
-/* -------------------------------------------------------------------------- */
-
-const demoUsers = [
-    {
-        role: "Admin",
-        email: "admin@example.com",
-        password: "admin123",
-    },
-    {
-        role: "Manager",
-        email: "manager@example.com",
-        password: "manager123",
-    },
-    {
-        role: "Staff",
-        email: "staff@example.com",
-        password: "staff123",
-    },
-];
-
-/* -------------------------------------------------------------------------- */
-/*                                Login Page                                  */
-/* -------------------------------------------------------------------------- */
-
-const Login = () => {
+export default function Login() {
     const navigate = useNavigate();
-
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const form = useForm<LoginFormValues>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: {
-            email: "",
-            password: "",
-        },
+    const [formData, setFormData] = useState({
+        email: "admin@mini-erp.local",
+        password: "admin123",
     });
 
-    const onSubmit = async (values: LoginFormValues) => {
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!formData.email || !formData.password) {
+            toast.error("Please enter email and password");
+            return;
+        }
+
         setIsLoading(true);
 
-        try {
-            // Simulate API delay
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-
-            const matchedUser = demoUsers.find(
-                (user) =>
-                    user.email === values.email &&
-                    user.password === values.password
-            );
-
-            if (!matchedUser) {
-                toast.error("Invalid email or password");
-                return;
-            }
-
-            // Mock token + user storage
-            localStorage.setItem("token", "mock-auth-token");
-
+        setTimeout(() => {
+            localStorage.setItem("authToken", "mini-erp-admin-token");
             localStorage.setItem(
-                "user",
+                "currentUser",
                 JSON.stringify({
-                    email: matchedUser.email,
-                    role: matchedUser.role,
+                    name: "System Admin",
+                    email: formData.email,
+                    role: "Admin",
                 })
             );
 
-            toast.success("Login successful");
-
+            toast.success("Login successful! Welcome back.");
             navigate("/admin/dashboard");
-        } catch (error) {
-            toast.error("Something went wrong");
-        } finally {
             setIsLoading(false);
-        }
+        }, 1200);
     };
 
     return (
-        <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-4 sm:p-8">
-            <div className="flex w-full max-w-5xl overflow-hidden rounded-3xl shadow-xl bg-white border border-slate-100">
-                {/* Left Section (Branding) */}
-                <div className="hidden lg:flex w-1/2 flex-col justify-between bg-slate-900 p-12 text-white relative overflow-hidden">
-                    {/* Decorative background elements */}
-                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-primary/20 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl"></div>
-                    
-                    <div className="relative z-10">
+        <main className="min-h-screen bg-[#f8fafc] text-slate-950 dark:bg-[#020617]">
+            <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
+                {/* Left Brand Panel */}
+                <section className="relative hidden overflow-hidden bg-[#030712] lg:flex lg:flex-col lg:justify-between">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.4),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.25),transparent_40%)]" />
+
+                    <div className="absolute inset-0 opacity-[0.08]">
+                        <div className="h-full w-full bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:48px_48px]" />
+                    </div>
+
+                    <div className="relative z-10 p-12">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg">
-                                <ShieldCheck className="h-6 w-6" />
+                            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-slate-950 p-1 shadow-xl shadow-blue-600/20">
+                                <img src={Logo} alt="Logo" className="h-full w-full object-contain" />
                             </div>
-                            <h1 className="text-3xl font-bold tracking-tight">
-                                Mini ERP
-                            </h1>
-                        </div>
 
-                        <p className="mt-8 text-lg text-slate-300 leading-relaxed max-w-md">
-                            Streamline your business operations. Manage users, products, invoices, and expenses from a single, intuitive dashboard.
-                        </p>
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-sm">
-                            <p className="font-medium text-white mb-2">"The best tool for our daily operations."</p>
-                            <p className="text-sm text-slate-400">— Admin Team</p>
+                            <div>
+                                <h1 className="text-xl font-semibold text-white">Mini ERP</h1>
+                                <p className="text-sm text-slate-300">
+                                    Business Management System
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Right Section (Form) */}
-                <div className="w-full lg:w-1/2 p-8 sm:p-12 md:p-16 flex flex-col justify-center">
-                    <div className="mx-auto w-full max-w-md space-y-8">
-                        <div className="text-center lg:text-left">
-                            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-                                Welcome Back
+                    <div className="relative z-10 px-12">
+                        <div className="max-w-xl">
+                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm text-slate-200 backdrop-blur">
+                                <ShieldCheck className="h-4 w-4 text-blue-300" />
+                                Secure Admin Workspace
+                            </div>
+
+                            <h2 className="text-5xl font-semibold leading-tight tracking-tight text-white">
+                                Manage your business operations from one place.
                             </h2>
-                            <p className="mt-2 text-sm text-slate-500">
-                                Enter your credentials to access your dashboard.
+
+                            <p className="mt-5 max-w-lg text-base leading-7 text-slate-300">
+                                Control users, products, invoices, expenses, reports, and audit
+                                logs through a clean ERP dashboard.
                             </p>
                         </div>
+                    </div>
 
-                        <Form {...form}>
-                            <form
-                                onSubmit={form.handleSubmit(onSubmit)}
-                                className="space-y-5"
-                            >
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-slate-700">Email Address</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="name@example.com"
-                                                    type="email"
-                                                    className="h-11 bg-slate-50/50"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                    <div className="relative z-10 p-12">
+                        <div className="grid max-w-xl grid-cols-2 gap-4">
+                            <FeatureCard
+                                icon={UsersRound}
+                                title="Users"
+                                value="Role based"
+                            />
+                            <FeatureCard icon={Boxes} title="Products" value="Inventory" />
+                            <FeatureCard
+                                icon={ReceiptText}
+                                title="Invoices"
+                                value="Billing"
+                            />
+                            <FeatureCard icon={Wallet} title="Expenses" value="Approvals" />
+                        </div>
+                    </div>
+                </section>
 
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-slate-700 flex justify-between">
-                                                Password
-                                                <Link to="#" className="text-xs font-medium text-primary hover:underline">Forgot password?</Link>
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Enter your password"
-                                                    type="password"
-                                                    className="h-11 bg-slate-50/50"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                {/* Right Login Area */}
+                <section className="relative flex min-h-screen items-center justify-center px-6 py-10">
+                    <div className="absolute right-16 top-16 h-40 w-40 rounded-full bg-blue-100 blur-3xl dark:bg-blue-950/40" />
+                    <div className="absolute bottom-16 left-16 h-40 w-40 rounded-full bg-cyan-100 blur-3xl dark:bg-cyan-950/40" />
+
+                    <div className="relative w-full max-w-[440px]">
+                        {/* Mobile logo */}
+                        <div className="mb-8 flex items-center gap-3 lg:hidden">
+                            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-slate-950 p-1 text-sm font-bold text-white dark:bg-white">
+                                <img src={Logo} alt="Logo" className="h-full w-full object-contain" />
+                            </div>
+
+                            <div>
+                                <h1 className="text-lg font-semibold text-slate-950 dark:text-white">
+                                    Mini ERP
+                                </h1>
+                                <p className="text-sm text-slate-500">Admin Dashboard</p>
+                            </div>
+                        </div>
+
+                        <div className="rounded-[32px] border border-slate-200 bg-white/80 p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/50">
+                            <div className="mb-8">
+                                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
+                                    <LockKeyhole className="h-7 w-7" />
+                                </div>
+
+                                <h2 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                                    Sign in to Mini ERP
+                                </h2>
+
+                                <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                    Enter your credentials to access the admin dashboard.
+                                </p>
+                            </div>
+
+                            <form onSubmit={handleLogin} className="space-y-5">
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">Email Address</Label>
+
+                                    <div className="relative">
+                                        <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+                                        <Input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, email: e.target.value })
+                                            }
+                                            placeholder="admin@mini-erp.local"
+                                            className="h-12 rounded-xl bg-slate-50 pl-11 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium">Password</Label>
+
+                                    <div className="relative">
+                                        <LockKeyhole className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            value={formData.password}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, password: e.target.value })
+                                            }
+                                            placeholder="Enter password"
+                                            className="h-12 rounded-xl bg-slate-50 pl-11 pr-11 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-4 w-4" />
+                                            ) : (
+                                                <Eye className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="button"
+                                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                                        >
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                </div>
 
                                 <Button
                                     type="submit"
-                                    className="w-full h-11 mt-2 text-base font-medium transition-all hover:shadow-md"
                                     disabled={isLoading}
+                                    className="h-12 w-full rounded-xl bg-blue-600 text-base font-semibold shadow-lg shadow-blue-600/20 hover:bg-blue-700 disabled:opacity-70"
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Logging in...
-                                        </>
-                                    ) : (
-                                        "Login"
-                                    )}
+                                {isLoading ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                        Signing in...
+                                    </div>
+                                ) : (
+                                    <>
+                                        Sign In
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </>
+                                )}
                                 </Button>
                             </form>
-                        </Form>
 
-                        <p className="text-sm text-center text-slate-500">
-                            Don&apos;t have an account?{" "}
-                            <Link to="/register" className="text-primary font-medium hover:underline transition-colors">
-                                Create an account
-                            </Link>
-                        </p>
+                            <div className="mt-8 rounded-2xl border border-slate-200/60 bg-slate-50/50 p-5 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-950/50">
+                                <div className="mb-3 flex items-center gap-2">
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                                        Demo Credentials
+                                    </p>
+                                </div>
+
+                                <div className="space-y-1 text-sm text-slate-500 dark:text-slate-400">
+                                    <p>
+                                        Email:{" "}
+                                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                                            admin@mini-erp.local
+                                        </span>
+                                    </p>
+                                    <p>
+                                        Password:{" "}
+                                        <span className="font-medium text-slate-800 dark:text-slate-200">
+                                            admin123
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 text-center">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                                Don&apos;t have an account?{" "}
+                                <Link
+                                    to="/register"
+                                    className="font-semibold text-blue-600 hover:text-blue-700"
+                                >
+                                    Create Account
+                                </Link>
+                            </p>
+
+                            <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+                                New users can register with Admin, Manager, Staff or Accountant role.
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
+        </main>
+    );
+}
+
+function FeatureCard({
+    icon: Icon,
+    title,
+    value,
+}: {
+    icon: React.ElementType;
+    title: string;
+    value: string;
+}) {
+    return (
+        <div className="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-600">
+                <Icon className="h-5 w-5" />
+            </div>
+
+            <p className="text-sm text-slate-300">{title}</p>
+            <p className="mt-1 text-lg font-semibold text-white">{value}</p>
         </div>
     );
-};
-
-export default Login;
+}

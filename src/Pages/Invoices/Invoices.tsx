@@ -1,4 +1,7 @@
+import PageSkeleton from "@/components/common/PageSkeleton";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   FileText,
@@ -6,7 +9,6 @@ import {
   Clock3,
   TriangleAlert,
   Plus,
-  CalendarDays,
   ChevronDown,
   MoreVertical,
   ReceiptText,
@@ -61,15 +63,7 @@ const stats = [
     noteText: "from last month",
     icon: FileText,
     color: "purple",
-    spark: [
-      { value: 20 },
-      { value: 30 },
-      { value: 45 },
-      { value: 42 },
-      { value: 58 },
-      { value: 70 },
-      { value: 88 },
-    ],
+    spark: [{ value: 20 }, { value: 30 }, { value: 45 }, { value: 42 }, { value: 58 }, { value: 70 }, { value: 88 }],
   },
   {
     title: "Paid Invoices",
@@ -78,15 +72,7 @@ const stats = [
     noteText: "payment completed",
     icon: CircleCheckBig,
     color: "green",
-    spark: [
-      { value: 22 },
-      { value: 35 },
-      { value: 42 },
-      { value: 50 },
-      { value: 62 },
-      { value: 75 },
-      { value: 90 },
-    ],
+    spark: [{ value: 22 }, { value: 35 }, { value: 42 }, { value: 50 }, { value: 62 }, { value: 75 }, { value: 90 }],
   },
   {
     title: "Pending",
@@ -95,15 +81,7 @@ const stats = [
     noteText: "awaiting payment",
     icon: Clock3,
     color: "orange",
-    spark: [
-      { value: 34 },
-      { value: 40 },
-      { value: 38 },
-      { value: 46 },
-      { value: 54 },
-      { value: 50 },
-      { value: 62 },
-    ],
+    spark: [{ value: 34 }, { value: 40 }, { value: 38 }, { value: 46 }, { value: 54 }, { value: 50 }, { value: 62 }],
   },
   {
     title: "Overdue",
@@ -112,15 +90,7 @@ const stats = [
     noteText: "requires follow-up",
     icon: TriangleAlert,
     color: "red",
-    spark: [
-      { value: 20 },
-      { value: 25 },
-      { value: 22 },
-      { value: 36 },
-      { value: 32 },
-      { value: 44 },
-      { value: 58 },
-    ],
+    spark: [{ value: 20 }, { value: 25 }, { value: 22 }, { value: 36 }, { value: 32 }, { value: 44 }, { value: 58 }],
   },
 ];
 
@@ -211,28 +181,28 @@ const activityData = [
 
 const styles = {
   purple: {
-    bg: "bg-purple-50",
-    text: "text-purple-600",
+    bg: "bg-violet-500/10 dark:bg-violet-500/10",
+    text: "text-violet-600 dark:text-violet-400",
     line: "#8b5cf6",
   },
   green: {
-    bg: "bg-green-50",
-    text: "text-green-600",
-    line: "#22c55e",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/10",
+    text: "text-emerald-600 dark:text-emerald-400",
+    line: "#10b981",
   },
   orange: {
-    bg: "bg-orange-50",
-    text: "text-orange-600",
-    line: "#f97316",
+    bg: "bg-amber-500/10 dark:bg-amber-500/10",
+    text: "text-amber-600 dark:text-amber-400",
+    line: "#f59e0b",
   },
   red: {
-    bg: "bg-red-50",
-    text: "text-red-500",
-    line: "#ef4444",
+    bg: "bg-rose-500/10 dark:bg-rose-500/10",
+    text: "text-rose-600 dark:text-rose-400",
+    line: "#f43f5e",
   },
   blue: {
-    bg: "bg-blue-50",
-    text: "text-blue-600",
+    bg: "bg-blue-500/10 dark:bg-blue-500/10",
+    text: "text-blue-600 dark:text-blue-400",
     line: "#3b82f6",
   },
 };
@@ -244,10 +214,10 @@ function formatCurrency(value: number) {
 function StatusBadge({ status }: { status: string }) {
   const statusClass =
     status === "Paid"
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
       : status === "Pending"
-        ? "bg-orange-100 text-orange-700"
-        : "bg-red-100 text-red-700";
+      ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
@@ -261,24 +231,24 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
   const color = styles[item.color as keyof typeof styles];
 
   return (
-    <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
       <CardContent className="flex items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-5">
-          <div
-            className={`flex h-16 w-16 items-center justify-center rounded-2xl ${color.bg}`}
-          >
+          <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${color.bg}`}>
             <Icon className={`h-8 w-8 ${color.text}`} />
           </div>
 
           <div>
-            <p className="text-sm font-medium text-slate-700">{item.title}</p>
-            <h3 className="mt-2 text-3xl font-semibold text-slate-950">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {item.title}
+            </p>
+
+            <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
               {item.value}
             </h3>
-            <p className="mt-3 text-sm text-slate-600">
-              <span className={`font-semibold ${color.text}`}>
-                {item.note}
-              </span>{" "}
+
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+              <span className={`font-semibold ${color.text}`}>{item.note}</span>{" "}
               {item.noteText}
             </p>
           </div>
@@ -303,12 +273,12 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
 }
 
 export default function Invoices() {
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem("invoices");
-    return saved ? JSON.parse(saved) : invoicesTable;
-  });
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     customer: "",
@@ -318,11 +288,27 @@ export default function Invoices() {
     note: "",
   });
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedInvoices = localStorage.getItem("invoices");
 
+      if (savedInvoices) {
+        setInvoices(JSON.parse(savedInvoices));
+      } else {
+        setInvoices(invoicesTable);
+      }
+
+      setLoading(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("invoices", JSON.stringify(invoices));
-  }, [invoices]);
+    if (!loading) {
+      localStorage.setItem("invoices", JSON.stringify(invoices));
+    }
+  }, [invoices, loading]);
 
   const resetForm = () => {
     setFormData({
@@ -338,7 +324,7 @@ export default function Invoices() {
 
   const handleSaveInvoice = () => {
     if (!formData.customer || !formData.amount || !formData.date) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
@@ -347,16 +333,17 @@ export default function Invoices() {
         prev.map((invoice) =>
           invoice.invoice === editingInvoiceId
             ? {
-              ...invoice,
-              customer: formData.customer,
-              amount: `₹${Number(formData.amount).toLocaleString("en-IN")}`,
-              status: formData.status,
-              date: formData.date,
-              note: formData.note,
-            }
+                ...invoice,
+                customer: formData.customer,
+                amount: `₹${Number(formData.amount).toLocaleString("en-IN")}`,
+                status: formData.status,
+                date: formData.date,
+                note: formData.note,
+              }
             : invoice
         )
       );
+      toast.success("Invoice updated successfully");
     } else {
       const newInvoice: Invoice = {
         invoice: `INV-${Date.now()}`,
@@ -368,6 +355,7 @@ export default function Invoices() {
       };
 
       setInvoices((prev) => [newInvoice, ...prev]);
+      toast.success("Invoice created successfully");
     }
 
     resetForm();
@@ -389,24 +377,35 @@ export default function Invoices() {
   };
 
   const handleDeleteInvoice = (invoiceId: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this invoice?"
-    );
-
-    if (!confirmDelete) return;
-
-    setInvoices((prev) =>
-      prev.filter((invoice) => invoice.invoice !== invoiceId)
-    );
+    setInvoiceToDelete(invoiceId);
+    setIsDeleteDialogOpen(true);
   };
 
+  const confirmDeleteInvoice = () => {
+    if (!invoiceToDelete) return;
+
+    setInvoices((prev) =>
+      prev.filter((invoice) => invoice.invoice !== invoiceToDelete)
+    );
+
+    toast.success("Invoice deleted successfully");
+    setInvoiceToDelete(null);
+  };
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            {/* <h1 className="text-3xl font-semibold text-slate-950">Invoices</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            {/* <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
+              Invoices
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Create, track and manage customer invoices
             </p> */}
           </div>
@@ -430,18 +429,19 @@ export default function Invoices() {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[1.75fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
               <div>
-                <CardTitle className="text-2xl font-semibold text-slate-950">
+                <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                   Invoice Revenue Overview
                 </CardTitle>
 
-                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700">
+                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-6 rounded-full bg-purple-600" />
                     Total Invoice
                   </div>
+
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-6 rounded-full bg-green-500" />
                     Paid
@@ -495,9 +495,9 @@ export default function Invoices() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Invoice Status
               </CardTitle>
             </CardHeader>
@@ -523,8 +523,11 @@ export default function Invoices() {
                   </ResponsiveContainer>
 
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-sm text-slate-600">Total</span>
-                    <span className="text-3xl font-semibold text-slate-950">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Total
+                    </span>
+
+                    <span className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
                       100%
                     </span>
                   </div>
@@ -538,10 +541,13 @@ export default function Invoices() {
                           className="h-3.5 w-3.5 rounded-full"
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm text-slate-700">{item.name}</span>
+
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                          {item.name}
+                        </span>
                       </div>
 
-                      <span className="text-sm font-semibold text-slate-950">
+                      <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                         {item.value}%
                       </span>
                     </div>
@@ -553,9 +559,9 @@ export default function Invoices() {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[1.75fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Invoices
               </CardTitle>
 
@@ -565,10 +571,10 @@ export default function Invoices() {
             </CardHeader>
 
             <CardContent>
-              <div className="overflow-hidden rounded-xl border border-slate-100">
-                <table className="w-full text-left">
+              <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-white/5">
+                <table className="w-full min-w-[900px] text-left">
                   <thead>
-                    <tr className="bg-slate-50 text-sm text-slate-600">
+                    <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-zinc-900/50 dark:text-slate-400">
                       <th className="px-4 py-4 font-medium">Invoice #</th>
                       <th className="px-4 py-4 font-medium">Customer</th>
                       <th className="px-4 py-4 font-medium">Amount</th>
@@ -580,22 +586,30 @@ export default function Invoices() {
 
                   <tbody>
                     {invoices.map((item) => (
-                      <tr key={item.invoice} className="border-t border-slate-100 text-sm">
-                        <td className="px-4 py-4 font-medium text-slate-900">
+                      <tr
+                        key={item.invoice}
+                        className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-slate-800/30"
+                      >
+                        <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
                           {item.invoice}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.customer}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.amount}
                         </td>
+
                         <td className="px-4 py-4">
                           <StatusBadge status={item.status} />
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.date}
                         </td>
+
                         <td className="px-4 py-4">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -619,15 +633,26 @@ export default function Invoices() {
                         </td>
                       </tr>
                     ))}
+
+                    {invoices.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
+                        >
+                          No invoices found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Activity
               </CardTitle>
             </CardHeader>
@@ -640,23 +665,22 @@ export default function Invoices() {
                 return (
                   <div key={item.title} className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div
-                        className={`flex h-11 w-11 items-center justify-center rounded-xl ${c.bg}`}
-                      >
+                      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${c.bg}`}>
                         <Icon className={`h-5 w-5 ${c.text}`} />
                       </div>
 
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">
+                        <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">
+
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                           {item.desc}
                         </p>
                       </div>
                     </div>
 
-                    <span className="whitespace-nowrap text-sm text-slate-500">
+                    <span className="whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {item.time}
                     </span>
                   </div>
@@ -666,7 +690,6 @@ export default function Invoices() {
           </Card>
         </div>
       </div>
-
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[560px]">
@@ -721,7 +744,7 @@ export default function Invoices() {
                     status: e.target.value as Invoice["status"],
                   })
                 }
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               >
                 <option value="Pending">Pending</option>
                 <option value="Paid">Paid</option>
@@ -761,6 +784,14 @@ export default function Invoices() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDeleteInvoice}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this invoice? This action cannot be undone."
+      />
     </main>
   );
 }

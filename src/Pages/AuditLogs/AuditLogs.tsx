@@ -1,4 +1,8 @@
+import PageSkeleton from "@/components/common/PageSkeleton";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
+
 import {
   Activity,
   Search,
@@ -116,33 +120,33 @@ const defaultAuditLogs: AuditLog[] = [
 const moduleStyles = {
   Users: {
     icon: UserPlus,
-    bg: "bg-blue-50 dark:bg-blue-950",
-    text: "text-blue-600 dark:text-blue-300",
+    bg: "bg-blue-500/10 dark:bg-blue-500/10",
+    text: "text-blue-600 dark:text-blue-400",
   },
   Products: {
     icon: Package,
-    bg: "bg-green-50 dark:bg-green-950",
-    text: "text-green-600 dark:text-green-300",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/10",
+    text: "text-emerald-600 dark:text-emerald-400",
   },
   Invoices: {
     icon: ReceiptText,
-    bg: "bg-purple-50 dark:bg-purple-950",
-    text: "text-purple-600 dark:text-purple-300",
+    bg: "bg-violet-500/10 dark:bg-violet-500/10",
+    text: "text-violet-600 dark:text-violet-400",
   },
   Expenses: {
     icon: Wallet,
-    bg: "bg-orange-50 dark:bg-orange-950",
-    text: "text-orange-600 dark:text-orange-300",
+    bg: "bg-amber-500/10 dark:bg-amber-500/10",
+    text: "text-amber-600 dark:text-amber-400",
   },
   Auth: {
     icon: ShieldCheck,
-    bg: "bg-red-50 dark:bg-red-950",
-    text: "text-red-600 dark:text-red-300",
+    bg: "bg-rose-500/10 dark:bg-rose-500/10",
+    text: "text-rose-600 dark:text-rose-400",
   },
   Settings: {
     icon: FileText,
-    bg: "bg-slate-100 dark:bg-slate-800",
-    text: "text-slate-600 dark:text-slate-300",
+    bg: "bg-slate-500/10 dark:bg-slate-500/10",
+    text: "text-slate-600 dark:text-slate-400",
   },
 };
 
@@ -166,19 +170,35 @@ function ActionBadge({ action }: { action: AuditLog["action"] }) {
 }
 
 export default function AuditLogs() {
-  const [logs, setLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem("auditLogs");
-    return saved ? JSON.parse(saved) : defaultAuditLogs;
-  });
+  const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState("All");
   const [actionFilter, setActionFilter] = useState("All");
-
-
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("auditLogs", JSON.stringify(logs));
-  }, [logs]);
+    const timer = setTimeout(() => {
+      const savedLogs = localStorage.getItem("auditLogs");
+
+      if (savedLogs) {
+        setLogs(JSON.parse(savedLogs));
+      } else {
+        setLogs(defaultAuditLogs);
+        localStorage.setItem("auditLogs", JSON.stringify(defaultAuditLogs));
+      }
+
+      setLoading(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem("auditLogs", JSON.stringify(logs));
+    }
+  }, [logs, loading]);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -207,24 +227,24 @@ export default function AuditLogs() {
   const authLogs = logs.filter((log) => log.module === "Auth").length;
 
   const handleClearLogs = () => {
-    const confirmClear = window.confirm(
-      "Are you sure you want to clear all audit logs?"
-    );
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (!confirmClear) return;
-
+  const confirmClearLogs = () => {
     setLogs([]);
     localStorage.setItem("auditLogs", JSON.stringify([]));
+    toast.success("All audit logs cleared successfully");
   };
 
   const handleResetLogs = () => {
-    localStorage.setItem("auditLogs", JSON.stringify(defaultAuditLogs));
     setLogs(defaultAuditLogs);
+    localStorage.setItem("auditLogs", JSON.stringify(defaultAuditLogs));
+    toast.success("Audit logs reset to default");
   };
 
   const handleExportLogs = () => {
     if (filteredLogs.length === 0) {
-      alert("No logs available to export");
+      toast.error("No logs available to export");
       return;
     }
 
@@ -271,10 +291,13 @@ export default function AuditLogs() {
     URL.revokeObjectURL(url);
   };
 
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             {/* <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
@@ -315,9 +338,8 @@ export default function AuditLogs() {
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
                 <Activity className="h-7 w-7" />
@@ -327,7 +349,6 @@ export default function AuditLogs() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Total Logs
                 </p>
-
                 <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
                   {totalLogs}
                 </h3>
@@ -335,7 +356,7 @@ export default function AuditLogs() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-300">
                 <Clock3 className="h-7 w-7" />
@@ -345,7 +366,6 @@ export default function AuditLogs() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Today
                 </p>
-
                 <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
                   {todayLogs}
                 </h3>
@@ -353,7 +373,7 @@ export default function AuditLogs() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950 dark:text-red-300">
                 <Trash2 className="h-7 w-7" />
@@ -363,7 +383,6 @@ export default function AuditLogs() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Deleted Actions
                 </p>
-
                 <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
                   {deletedLogs}
                 </h3>
@@ -371,7 +390,7 @@ export default function AuditLogs() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-300">
                 <ShieldCheck className="h-7 w-7" />
@@ -381,7 +400,6 @@ export default function AuditLogs() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Auth Events
                 </p>
-
                 <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
                   {authLogs}
                 </h3>
@@ -390,8 +408,7 @@ export default function AuditLogs() {
           </Card>
         </div>
 
-        {/* Logs Table */}
-        <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
           <CardHeader className="space-y-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
@@ -441,10 +458,10 @@ export default function AuditLogs() {
           </CardHeader>
 
           <CardContent>
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-white/5">
               <table className="w-full min-w-[1000px] text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-white/10 dark:bg-zinc-900/50 dark:text-slate-400">
                     <th className="px-4 py-4 font-medium">Log ID</th>
                     <th className="px-4 py-4 font-medium">Module</th>
                     <th className="px-4 py-4 font-medium">Action</th>
@@ -463,7 +480,7 @@ export default function AuditLogs() {
                     return (
                       <tr
                         key={log.id}
-                        className="border-t border-slate-100 text-sm dark:border-slate-800"
+                        className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-slate-800/30"
                       >
                         <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
                           {log.id}
@@ -528,6 +545,14 @@ export default function AuditLogs() {
           </CardContent>
         </Card>
       </div>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmClearLogs}
+        title="Clear Audit Logs"
+        description="Are you sure you want to clear all audit logs? This action cannot be undone."
+      />
     </main>
   );
 }

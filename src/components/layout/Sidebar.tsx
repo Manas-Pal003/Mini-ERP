@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Logo from "../../assets/Logo.png";
 
 const menuItems = [
   {
@@ -97,12 +98,15 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar collapsible="icon">
       {/* Header */}
       <SidebarHeader className="border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-xl font-bold text-white">
-            ERP
+        <div
+          onClick={() => navigate("/admin/dashboard")}
+          className="flex cursor-pointer items-center gap-3 px-2 py-2 transition-opacity hover:opacity-80"
+        >
+          <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-slate-950 p-1 shadow-lg dark:bg-white">
+            <img src={Logo} alt="Mini ERP Logo" className="h-full w-full object-contain" />
           </div>
 
           <div className="flex flex-col">
@@ -154,14 +158,13 @@ const AppSidebar = () => {
                   <span>Users</span>
 
                   <ChevronDown
-                    className={`ml-auto h-4 w-4 transition-transform ${
-                      usersOpen ? "rotate-180" : ""
-                    }`}
+                    className={`ml-auto h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </SidebarMenuButton>
 
                 {usersOpen && (
-                  <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-slate-800">
+                  <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-white/10">
                     <div className="space-y-1">
                       {userSubMenus.map((item) => {
                         const isActive = location.pathname === item.url;
@@ -170,11 +173,10 @@ const AppSidebar = () => {
                           <Link
                             key={item.title}
                             to={item.url}
-                            className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                              isActive
+                            className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
                                 ? "bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white"
                                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
-                            }`}
+                              }`}
                           >
                             {item.title}
                           </Link>
@@ -254,8 +256,8 @@ const AppSidebar = () => {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t border-slate-200 p-3 dark:border-slate-800">
-        <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+      <SidebarFooter className="border-t border-slate-200 p-3 dark:border-white/10">
+        <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-zinc-900/50">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 overflow-hidden rounded-full bg-black">
               <img

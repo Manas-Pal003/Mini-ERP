@@ -1,4 +1,7 @@
+import PageSkeleton from "@/components/common/PageSkeleton";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
 import {
   UsersRound,
@@ -6,7 +9,6 @@ import {
   UserX,
   ShieldCheck,
   Plus,
-  MoreVertical,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,8 +99,8 @@ const usersTable: User[] = [
 function StatusBadge({ status }: { status: string }) {
   const statusClass =
     status === "Active"
-      ? "bg-green-100 text-green-700"
-      : "bg-red-100 text-red-700";
+      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
+      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
@@ -110,12 +112,12 @@ function StatusBadge({ status }: { status: string }) {
 function RoleBadge({ role }: { role: string }) {
   const roleClass =
     role === "Admin"
-      ? "bg-blue-100 text-blue-700"
+      ? "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
       : role === "Manager"
-      ? "bg-purple-100 text-purple-700"
+      ? "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300"
       : role === "Accountant"
-      ? "bg-emerald-100 text-emerald-700"
-      : "bg-orange-100 text-orange-700";
+      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+      : "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${roleClass}`}>
@@ -127,12 +129,12 @@ function RoleBadge({ role }: { role: string }) {
 export default function Users() {
   const location = useLocation();
 
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem("users");
-    return saved ? JSON.parse(saved) : usersTable;
-  });
+  const [users, setUsers] = useState<User[]>([]);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -143,11 +145,27 @@ export default function Users() {
     note: "",
   });
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedUsers = localStorage.getItem("users");
 
+      if (savedUsers) {
+        setUsers(JSON.parse(savedUsers));
+      } else {
+        setUsers(usersTable);
+      }
+
+      setLoading(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("users", JSON.stringify(users));
-  }, [users]);
+    if (!loading) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+  }, [users, loading]);
 
   const getRoleFromPath = (): UserRole | "All" => {
     if (location.pathname.includes("/admins")) return "Admin";
@@ -182,8 +200,12 @@ export default function Users() {
       : `Manage ${pageTitle.toLowerCase()} in the system`;
 
   const totalUsers = filteredUsers.length;
-  const activeUsers = filteredUsers.filter((user) => user.status === "Active").length;
-  const inactiveUsers = filteredUsers.filter((user) => user.status === "Inactive").length;
+  const activeUsers = filteredUsers.filter(
+    (user) => user.status === "Active"
+  ).length;
+  const inactiveUsers = filteredUsers.filter(
+    (user) => user.status === "Inactive"
+  ).length;
 
   const resetForm = () => {
     setFormData({
@@ -200,7 +222,7 @@ export default function Users() {
 
   const handleSaveUser = () => {
     if (!formData.name || !formData.email || !formData.joined) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
@@ -220,6 +242,7 @@ export default function Users() {
             : user
         )
       );
+      toast.success("User updated successfully");
     } else {
       const newUser: User = {
         id: `USR-${Date.now()}`,
@@ -232,6 +255,7 @@ export default function Users() {
       };
 
       setUsers((prev) => [newUser, ...prev]);
+      toast.success("User added successfully");
     }
 
     resetForm();
@@ -254,15 +278,25 @@ export default function Users() {
   };
 
   const handleDeleteUser = (id: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
-
-    if (!confirmDelete) return;
-
-    setUsers((prev) => prev.filter((user) => user.id !== id));
+    setUserToDelete(id);
+    setIsDeleteDialogOpen(true);
   };
 
+  const confirmDeleteUser = () => {
+    if (!userToDelete) return;
+
+    setUsers((prev) => prev.filter((user) => user.id !== userToDelete));
+
+    toast.success("User deleted successfully");
+    setUserToDelete(null);
+  };
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -288,9 +322,9 @@ export default function Users() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
                 <UsersRound className="h-7 w-7" />
               </div>
 
@@ -305,9 +339,9 @@ export default function Users() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 text-green-600 dark:bg-green-950 dark:text-green-300">
                 <UserCheck className="h-7 w-7" />
               </div>
 
@@ -322,9 +356,9 @@ export default function Users() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-500 dark:bg-red-950 dark:text-red-300">
                 <UserX className="h-7 w-7" />
               </div>
 
@@ -339,9 +373,9 @@ export default function Users() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardContent className="flex items-center gap-5 p-5">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-300">
                 <ShieldCheck className="h-7 w-7" />
               </div>
 
@@ -369,10 +403,10 @@ export default function Users() {
           </CardHeader>
 
           <CardContent>
-            <div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
-              <table className="w-full text-left">
+            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+              <table className="w-full min-w-[900px] text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-400">
                     <th className="px-4 py-4 font-medium">User ID</th>
                     <th className="px-4 py-4 font-medium">Name</th>
                     <th className="px-4 py-4 font-medium">Email</th>
@@ -387,7 +421,7 @@ export default function Users() {
                   {filteredUsers.map((item) => (
                     <tr
                       key={item.id}
-                      className="border-t border-slate-100 text-sm dark:border-slate-800"
+                      className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-800/30"
                     >
                       <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
                         {item.id}
@@ -555,13 +589,24 @@ export default function Users() {
                 Cancel
               </Button>
 
-              <Button onClick={handleSaveUser} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                onClick={handleSaveUser}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 {editingUserId ? "Update User" : "Save User"}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDeleteUser}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this user? This action cannot be undone."
+      />
     </main>
   );
 }

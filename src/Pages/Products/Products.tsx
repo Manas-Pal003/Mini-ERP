@@ -1,4 +1,7 @@
+import PageSkeleton from "@/components/common/PageSkeleton";
+import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   Package,
@@ -6,9 +9,7 @@ import {
   AlertTriangle,
   BadgeIndianRupee,
   Plus,
-  CalendarDays,
   ChevronDown,
-  MoreVertical,
   PackagePlus,
   PencilLine,
   Truck,
@@ -218,39 +219,39 @@ const activityData = [
 
 const styles = {
   green: {
-    bg: "bg-green-50",
-    text: "text-green-600",
-    line: "#22c55e",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/10",
+    text: "text-emerald-600 dark:text-emerald-400",
+    line: "#10b981",
   },
   blue: {
-    bg: "bg-blue-50",
-    text: "text-blue-600",
+    bg: "bg-blue-500/10 dark:bg-blue-500/10",
+    text: "text-blue-600 dark:text-blue-400",
     line: "#3b82f6",
   },
   orange: {
-    bg: "bg-orange-50",
-    text: "text-orange-600",
-    line: "#f97316",
+    bg: "bg-amber-500/10 dark:bg-amber-500/10",
+    text: "text-amber-600 dark:text-amber-400",
+    line: "#f59e0b",
   },
   purple: {
-    bg: "bg-purple-50",
-    text: "text-purple-600",
+    bg: "bg-violet-500/10 dark:bg-violet-500/10",
+    text: "text-violet-600 dark:text-violet-400",
     line: "#8b5cf6",
   },
   red: {
-    bg: "bg-red-50",
-    text: "text-red-500",
-    line: "#ef4444",
+    bg: "bg-rose-500/10 dark:bg-rose-500/10",
+    text: "text-rose-600 dark:text-rose-400",
+    line: "#f43f5e",
   },
 };
 
 function StatusBadge({ status }: { status: string }) {
   const statusClass =
     status === "In Stock"
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
       : status === "Low Stock"
-        ? "bg-orange-100 text-orange-700"
-        : "bg-red-100 text-red-700";
+      ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
@@ -264,7 +265,7 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
   const color = styles[item.color as keyof typeof styles];
 
   return (
-    <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
       <CardContent className="flex items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-5">
           <div
@@ -274,11 +275,15 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
           </div>
 
           <div>
-            <p className="text-sm font-medium text-slate-700">{item.title}</p>
-            <h3 className="mt-2 text-3xl font-semibold text-slate-950">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {item.title}
+            </p>
+
+            <h3 className="mt-2 text-3xl font-semibold text-slate-950 dark:text-slate-50">
               {item.value}
             </h3>
-            <p className="mt-3 text-sm text-slate-600">
+
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
               <span className={`font-semibold ${color.text}`}>
                 {item.note}
               </span>{" "}
@@ -306,12 +311,43 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
 }
 
 export default function Products() {
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem("products");
-    return saved ? JSON.parse(saved) : productsTable;
-  });
+  const [products, setProducts] = useState<Product[]>([]);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    stock: "",
+    price: "",
+    status: "In Stock" as Product["status"],
+    description: "",
+  });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const savedProducts = localStorage.getItem("products");
+
+      if (savedProducts) {
+        setProducts(JSON.parse(savedProducts));
+      } else {
+        setProducts(productsTable);
+      }
+
+      setLoading(false);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem("products", JSON.stringify(products));
+    }
+  }, [products, loading]);
 
   const resetForm = () => {
     setFormData({
@@ -326,37 +362,22 @@ export default function Products() {
     setEditingProductId(null);
   };
 
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    stock: "",
-    price: "",
-    status: "In Stock" as Product["status"],
-    description: "",
-  });
-
-
-
-  useEffect(() => {
-    localStorage.setItem("products", JSON.stringify(products));
-  }, [products]);
-
   const handleSaveProduct = () => {
-    if (
-      !formData.name ||
-      !formData.category ||
-      !formData.stock ||
-      !formData.price
-    ) {
-      alert("Please fill all required fields");
-      return;
-    }
+  if (
+    !formData.name ||
+    !formData.category ||
+    !formData.stock ||
+    !formData.price
+  ) {
+    toast.error("Please fill all required fields");
+    return;
+  }
 
-    if (editingProductId) {
-      setProducts((prev) =>
-        prev.map((product) =>
-          product.sku === editingProductId
-            ? {
+  if (editingProductId) {
+    setProducts((prev) =>
+      prev.map((product) =>
+        product.sku === editingProductId
+          ? {
               ...product,
               name: formData.name,
               category: formData.category,
@@ -365,26 +386,30 @@ export default function Products() {
               status: formData.status,
               description: formData.description,
             }
-            : product
-        )
-      );
-    } else {
-      const newProduct: Product = {
-        sku: `PRD-${Date.now()}`,
-        name: formData.name,
-        category: formData.category,
-        stock: formData.stock,
-        price: `₹${Number(formData.price).toLocaleString("en-IN")}`,
-        status: formData.status,
-        description: formData.description,
-      };
+          : product
+      )
+    );
 
-      setProducts((prev) => [newProduct, ...prev]);
-    }
+    toast.success("Product updated successfully");
+  } else {
+    const newProduct: Product = {
+      sku: `PRD-${Date.now()}`,
+      name: formData.name,
+      category: formData.category,
+      stock: formData.stock,
+      price: `₹${Number(formData.price).toLocaleString("en-IN")}`,
+      status: formData.status,
+      description: formData.description,
+    };
 
-    resetForm();
-    setOpen(false);
-  };
+    setProducts((prev) => [newProduct, ...prev]);
+
+    toast.success("Product added successfully");
+  }
+
+  resetForm();
+  setOpen(false);
+};
   const handleEditProduct = (product: Product) => {
     setEditingProductId(product.sku);
 
@@ -401,22 +426,33 @@ export default function Products() {
   };
 
   const handleDeleteProduct = (sku: string) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this product?"
-    );
-
-    if (!confirmDelete) return;
-
-    setProducts((prev) => prev.filter((product) => product.sku !== sku));
+    setProductToDelete(sku);
+    setIsDeleteDialogOpen(true);
   };
 
+  const confirmDeleteProduct = () => {
+    if (!productToDelete) return;
+
+    setProducts((prev) => prev.filter((product) => product.sku !== productToDelete));
+
+    toast.success("Product deleted successfully");
+    setProductToDelete(null);
+  };
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            {/* <h1 className="text-3xl font-semibold text-slate-950">Products</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            {/* <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
+              Products
+            </h1>
+
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Manage products, stock levels and inventory value
             </p> */}
           </div>
@@ -440,18 +476,19 @@ export default function Products() {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[1.75fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
               <div>
-                <CardTitle className="text-2xl font-semibold text-slate-950">
+                <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                   Inventory Overview
                 </CardTitle>
 
-                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700">
+                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-6 rounded-full bg-green-500" />
                     Products
                   </div>
+
                   <div className="flex items-center gap-2">
                     <span className="h-2 w-6 rounded-full bg-blue-500" />
                     Stock
@@ -469,7 +506,13 @@ export default function Products() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={overviewData}>
                   <defs>
-                    <linearGradient id="productFill" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="productFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#22c55e" stopOpacity={0.14} />
                       <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
                     </linearGradient>
@@ -500,9 +543,9 @@ export default function Products() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Products by Category
               </CardTitle>
             </CardHeader>
@@ -528,8 +571,11 @@ export default function Products() {
                   </ResponsiveContainer>
 
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-sm text-slate-600">Total</span>
-                    <span className="text-3xl font-semibold text-slate-950">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Total
+                    </span>
+
+                    <span className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
                       568
                     </span>
                   </div>
@@ -543,10 +589,13 @@ export default function Products() {
                           className="h-3.5 w-3.5 rounded-full"
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm text-slate-700">{item.name}</span>
+
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
+                          {item.name}
+                        </span>
                       </div>
 
-                      <span className="text-sm font-semibold text-slate-950">
+                      <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                         {item.value}%
                       </span>
                     </div>
@@ -558,9 +607,9 @@ export default function Products() {
         </div>
 
         <div className="grid gap-5 xl:grid-cols-[1.75fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Products
               </CardTitle>
 
@@ -570,10 +619,10 @@ export default function Products() {
             </CardHeader>
 
             <CardContent>
-              <div className="overflow-hidden rounded-xl border border-slate-100">
-                <table className="w-full text-left">
+              <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+                <table className="w-full min-w-[900px] text-left">
                   <thead>
-                    <tr className="bg-slate-50 text-sm text-slate-600">
+                    <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-400">
                       <th className="px-4 py-4 font-medium">SKU</th>
                       <th className="px-4 py-4 font-medium">Product</th>
                       <th className="px-4 py-4 font-medium">Category</th>
@@ -586,25 +635,34 @@ export default function Products() {
 
                   <tbody>
                     {products.map((item) => (
-                      <tr key={item.sku} className="border-t border-slate-100 text-sm">
-                        <td className="px-4 py-4 font-medium text-slate-900">
+                      <tr
+                        key={item.sku}
+                        className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-800/30"
+                      >
+                        <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
                           {item.sku}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.name}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.category}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.stock}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.price}
                         </td>
+
                         <td className="px-4 py-4">
                           <StatusBadge status={item.status} />
                         </td>
+
                         <td className="px-4 py-4">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -628,15 +686,26 @@ export default function Products() {
                         </td>
                       </tr>
                     ))}
+
+                    {products.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400"
+                        >
+                          No products found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader>
-              <CardTitle className="text-2xl font-semibold text-slate-950">
+              <CardTitle className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Activity
               </CardTitle>
             </CardHeader>
@@ -656,16 +725,17 @@ export default function Products() {
                       </div>
 
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">
+                        <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">
+
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                           {item.desc}
                         </p>
                       </div>
                     </div>
 
-                    <span className="whitespace-nowrap text-sm text-slate-500">
+                    <span className="whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {item.time}
                     </span>
                   </div>
@@ -703,7 +773,7 @@ export default function Products() {
                 onChange={(e) =>
                   setFormData({ ...formData, category: e.target.value })
                 }
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-green-500"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-green-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               >
                 <option value="">Select category</option>
                 <option value="Electronics">Electronics</option>
@@ -748,7 +818,7 @@ export default function Products() {
                     status: e.target.value as Product["status"],
                   })
                 }
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-green-500"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-green-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
               >
                 <option value="In Stock">In Stock</option>
                 <option value="Low Stock">Low Stock</option>
@@ -788,6 +858,14 @@ export default function Products() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDeleteProduct}
+        title="Confirm Deletion"
+        description="Are you sure you want to delete this product? This action cannot be undone."
+      />
     </main>
   );
 }

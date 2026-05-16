@@ -190,24 +190,24 @@ const activities = [
 
 const theme = {
   blue: {
-    bg: "bg-blue-50",
-    text: "text-blue-600",
-    line: "#2563eb",
+    bg: "bg-blue-500/10 dark:bg-blue-500/10",
+    text: "text-blue-600 dark:text-blue-400",
+    line: "#3b82f6",
   },
   green: {
-    bg: "bg-green-50",
-    text: "text-green-600",
-    line: "#22c55e",
+    bg: "bg-emerald-500/10 dark:bg-emerald-500/10",
+    text: "text-emerald-600 dark:text-emerald-400",
+    line: "#10b981",
   },
   purple: {
-    bg: "bg-purple-50",
-    text: "text-purple-600",
-    line: "#7c3aed",
+    bg: "bg-violet-500/10 dark:bg-violet-500/10",
+    text: "text-violet-600 dark:text-violet-400",
+    line: "#8b5cf6",
   },
   orange: {
-    bg: "bg-orange-50",
-    text: "text-orange-600",
-    line: "#f97316",
+    bg: "bg-amber-500/10 dark:bg-amber-500/10",
+    text: "text-amber-600 dark:text-amber-400",
+    line: "#f59e0b",
   },
 };
 
@@ -218,10 +218,10 @@ function formatCurrency(value: number) {
 function StatusBadge({ status }: { status: string }) {
   const statusClass =
     status === "Paid"
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
       : status === "Pending"
-      ? "bg-orange-100 text-orange-700"
-      : "bg-red-100 text-red-700";
+      ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
@@ -235,7 +235,7 @@ function KpiCard({ item }: { item: (typeof kpiCards)[number] }) {
   const colors = theme[item.color as keyof typeof theme];
 
   return (
-    <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <Card className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
       <CardContent className="flex items-center justify-between gap-4 p-5">
         <div className="flex items-center gap-5">
           <div
@@ -245,13 +245,13 @@ function KpiCard({ item }: { item: (typeof kpiCards)[number] }) {
           </div>
 
           <div>
-            <p className="text-sm font-medium text-slate-700">{item.title}</p>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{item.title}</p>
 
-            <h3 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+            <h3 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 dark:text-slate-50">
               {item.value}
             </h3>
 
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
               <span className={`font-semibold ${colors.text}`}>
                 {item.highlight}
               </span>{" "}
@@ -280,7 +280,7 @@ function KpiCard({ item }: { item: (typeof kpiCards)[number] }) {
 
 export default function AdminDashboard() {
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-4">
         {/* Page heading only, no navbar */}
         {/* <div className="flex items-center gap-4">
@@ -307,14 +307,14 @@ export default function AdminDashboard() {
 
         {/* Main analytics section */}
         <div className="grid gap-5 xl:grid-cols-[1.7fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
               <div>
-                <CardTitle className="text-xl font-semibold text-slate-950">
+                <CardTitle className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                   Revenue & Expenses Overview
                 </CardTitle>
 
-                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700">
+                <div className="mt-5 flex items-center gap-6 text-sm text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-5 rounded-full bg-blue-600" />
                     Revenue
@@ -353,13 +353,13 @@ export default function AdminDashboard() {
                     dataKey="month"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#334155", fontSize: 13 }}
+                    tick={{ fill: "currentColor", fontSize: 13 }}
                     dy={10}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#334155", fontSize: 13 }}
+                    tick={{ fill: "currentColor", fontSize: 13 }}
                     tickFormatter={formatCurrency}
                     width={90}
                   />
@@ -389,9 +389,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader>
-              <CardTitle className="text-xl font-semibold text-slate-950">
+              <CardTitle className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                 Invoice Status
               </CardTitle>
             </CardHeader>
@@ -416,8 +416,8 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
 
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-sm text-slate-600">Total</span>
-                    <span className="text-2xl font-semibold text-slate-950">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">Total</span>
+                    <span className="text-2xl font-semibold text-slate-950 dark:text-slate-50">
                       100%
                     </span>
                   </div>
@@ -434,12 +434,12 @@ export default function AdminDashboard() {
                           className="h-3.5 w-3.5 rounded-md"
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-sm text-slate-700">
+                        <span className="text-sm text-slate-700 dark:text-slate-300">
                           {item.name}
                         </span>
                       </div>
 
-                      <span className="text-sm font-semibold text-slate-950">
+                      <span className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                         {item.value}%
                       </span>
                     </div>
@@ -448,7 +448,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="mt-7 flex items-center justify-between gap-4">
-                <p className="text-sm text-slate-700">
+                <p className="text-sm text-slate-700 dark:text-slate-300">
                   More invoice analytics in reports
                 </p>
 
@@ -462,9 +462,9 @@ export default function AdminDashboard() {
 
         {/* Bottom cards */}
         <div className="grid gap-5 xl:grid-cols-[1.7fr_1fr]">
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-900/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold text-slate-950">
+              <CardTitle className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Invoices
               </CardTitle>
 
@@ -474,10 +474,10 @@ export default function AdminDashboard() {
             </CardHeader>
 
             <CardContent>
-              <div className="overflow-hidden rounded-xl border border-slate-100">
+              <div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-slate-50 text-sm text-slate-600">
+                    <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-400">
                       <th className="px-4 py-4 font-medium">Invoice #</th>
                       <th className="px-4 py-4 font-medium">Customer</th>
                       <th className="px-4 py-4 font-medium">Amount</th>
@@ -491,21 +491,21 @@ export default function AdminDashboard() {
                     {invoices.map((item) => (
                       <tr
                         key={item.invoice}
-                        className="border-t border-slate-100 text-sm"
+                        className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-slate-800/60 dark:hover:bg-slate-800/30"
                       >
-                        <td className="px-4 py-4 font-medium text-slate-900">
+                        <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
                           {item.invoice}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.customer}
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.amount}
                         </td>
                         <td className="px-4 py-4">
                           <StatusBadge status={item.status} />
                         </td>
-                        <td className="px-4 py-4 text-slate-900">
+                        <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
                           {item.date}
                         </td>
                         <td className="px-4 py-4 text-right">
@@ -519,9 +519,9 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold text-slate-950">
+              <CardTitle className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                 Recent Activity
               </CardTitle>
 
@@ -548,16 +548,16 @@ export default function AdminDashboard() {
                       </div>
 
                       <div>
-                        <p className="text-sm font-semibold text-slate-950">
+                        <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
                           {activity.title}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                           {activity.text}
                         </p>
                       </div>
                     </div>
 
-                    <span className="whitespace-nowrap text-sm text-slate-500">
+                    <span className="whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {activity.time}
                     </span>
                   </div>

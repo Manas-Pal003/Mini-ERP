@@ -1,6 +1,7 @@
 
 
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Grid2X2,
   User,
@@ -35,21 +36,21 @@ export default function Settings() {
 
   const handleSaveProfile = () => {
     localStorage.setItem("adminProfile", JSON.stringify(profile));
-    alert("Profile saved successfully");
+    toast.success("Profile saved successfully");
   };
 
   const handleUpdatePassword = () => {
     if (!security.currentPassword || !security.newPassword || !security.confirmPassword) {
-      alert("Please fill all password fields");
+      toast.error("Please fill all password fields");
       return;
     }
 
     if (security.newPassword !== security.confirmPassword) {
-      alert("New password and confirm password do not match");
+      toast.error("New password and confirm password do not match");
       return;
     }
 
-    alert("Password updated successfully");
+    toast.success("Password updated successfully");
 
     setSecurity({
       currentPassword: "",
@@ -59,7 +60,7 @@ export default function Settings() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 lg:p-8 dark:bg-slate-950">
+    <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
         {/* Page Header */}
         {/* <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -103,8 +104,8 @@ export default function Settings() {
 
           {/* Profile Tab */}
           <TabsContent value="profile">
-            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <CardHeader className="border-b border-slate-200 px-7 py-5 dark:border-slate-800">
+            <Card className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
+              <CardHeader className="border-b border-slate-200/60 px-7 py-5 dark:border-white/5">
                 <h2 className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                   Profile Information
                 </h2>
@@ -211,7 +212,7 @@ export default function Settings() {
                 </div>
               </CardContent>
 
-              <div className="flex justify-end gap-3 border-t border-slate-200 bg-white px-7 py-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex justify-end gap-3 border-t border-slate-200/60 bg-white/50 px-7 py-4 dark:border-white/5 dark:bg-zinc-900/50">
                 <Button variant="outline">Cancel</Button>
 
                 <Button onClick={handleSaveProfile} className="gap-2 bg-blue-600 hover:bg-blue-700">
@@ -224,8 +225,8 @@ export default function Settings() {
 
           {/* Security Tab */}
           <TabsContent value="security">
-            <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <CardHeader className="border-b border-slate-200 px-7 py-5 dark:border-slate-800">
+            <Card className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-md dark:border-white/5 dark:bg-zinc-900/50">
+              <CardHeader className="border-b border-slate-200/60 px-7 py-5 dark:border-white/5">
                 <h2 className="text-xl font-semibold text-slate-950 dark:text-slate-50">
                   Security Settings
                 </h2>
@@ -288,7 +289,7 @@ export default function Settings() {
                 </div>
               </CardContent>
 
-              <div className="flex justify-end gap-3 border-t border-slate-200 bg-white px-7 py-4 dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex justify-end gap-3 border-t border-slate-200/60 bg-white/50 px-7 py-4 dark:border-white/5 dark:bg-zinc-900/50">
                 <Button variant="outline">Cancel</Button>
 
                 <Button

@@ -9,6 +9,11 @@ const AuthRoute: RouteObject[] =[{
 },
 {
   
+  path: '/login',
+  element: <Login />,
+},
+{
+  
   path: '/register',
   element: <Register />,
 }    

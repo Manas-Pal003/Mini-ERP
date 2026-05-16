@@ -15,7 +15,7 @@ export default function DashboardLayout() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <SidebarInset className="bg-slate-50">
+      <SidebarInset className="bg-white dark:bg-black">
         {/* Topbar */}
         <Topbar />
 
