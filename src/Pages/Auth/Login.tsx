@@ -67,7 +67,7 @@ export default function Login() {
             );
 
             toast.success(`Logged in as ${role}! Welcome back.`);
-            navigate("/admin/dashboard");
+            navigate(`/${role.toLowerCase()}/dashboard`);
             setIsLoading(false);
         }, 1200);
     };

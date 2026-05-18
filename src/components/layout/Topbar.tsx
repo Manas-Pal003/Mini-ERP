@@ -8,6 +8,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import { getCurrentUserRole } from "@/lib/permissions";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,14 +38,35 @@ export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setTheme, theme } = useTheme();
+  const rolePrefix = `/${getCurrentUserRole().toLowerCase()}`;
 
-  let pageTitle = pageTitles[location.pathname] || "Dashboard";
-  if (location.pathname === "/admin/invoices" && location.search.includes("view=")) {
+  // Pull profile dynamically from localStorage
+  const currentUserStr = localStorage.getItem("currentUser");
+  let userName = "System Admin";
+  let userEmail = "admin@mini-erp.local";
+  let userRole = "Admin";
+
+  if (currentUserStr) {
+    try {
+      const u = JSON.parse(currentUserStr);
+      userName = u.name || userName;
+      userEmail = u.email || userEmail;
+      userRole = u.role || userRole;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // Normalize path to check pageTitles Record
+  const normalizedPath = location.pathname.replace(/^\/(staff|manager|accountant)/, "/admin");
+  let pageTitle = pageTitles[normalizedPath] || "Dashboard";
+  if (normalizedPath === "/admin/invoices" && location.search.includes("view=")) {
     pageTitle = "Invoice Details";
   }
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("currentUser");
     navigate("/login");
   };
 
@@ -77,7 +99,7 @@ export default function Topbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/admin/settings")}
+            onClick={() => navigate(`${rolePrefix}/settings`)}
             className="h-9 w-9 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <Settings className="h-5 w-5" />
@@ -112,9 +134,9 @@ export default function Topbar() {
             <DropdownMenuTrigger asChild>
               <button className="rounded-full outline-none ring-offset-2 transition hover:ring-2 hover:ring-slate-200">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="https://github.com/shadcn.png" alt="Admin User" />
-                  <AvatarFallback className="bg-red-600 text-sm font-semibold text-white">
-                    AU
+                  <AvatarImage src="https://github.com/shadcn.png" alt={userName} />
+                  <AvatarFallback className="bg-blue-600 text-sm font-semibold text-white">
+                    {userName.split(" ").map(n => n[0]).join("")}
                   </AvatarFallback>
                 </Avatar>
               </button>
@@ -123,23 +145,23 @@ export default function Topbar() {
             <DropdownMenuContent align="end" className="w-56 rounded-xl">
               <DropdownMenuLabel>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">
-                    Admin User
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                    {userName}
                   </p>
-                  <p className="text-xs font-normal text-slate-500">
-                    admin@example.com
+                  <p className="text-xs font-normal text-slate-500 dark:text-slate-400">
+                    {userEmail} ({userRole})
                   </p>
                 </div>
               </DropdownMenuLabel>
 
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem onClick={() => navigate("/admin/profile")}>
+              <DropdownMenuItem onClick={() => navigate(`${rolePrefix}/profile`)}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => navigate("/admin/settings")}>
+              <DropdownMenuItem onClick={() => navigate(`${rolePrefix}/settings`)}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>

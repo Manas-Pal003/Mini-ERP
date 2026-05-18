@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getCurrentPermissions } from "@/lib/permissions";
+import { getCurrentPermissions, getCurrentUserRole } from "@/lib/permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -88,8 +88,12 @@ const AppSidebar = () => {
   const userPermissions = getCurrentPermissions();
   const location = useLocation();
   const navigate = useNavigate();
+  const rolePrefix = `/${getCurrentUserRole().toLowerCase()}`;
 
-  const filteredMenuItems = menuItems.filter((item) => {
+  const filteredMenuItems = menuItems.map(item => ({
+    ...item,
+    url: item.url.replace("/admin", rolePrefix)
+  })).filter((item) => {
     if (item.title === "Users") return userPermissions.canViewUsers;
     if (item.title === "Products") return userPermissions.canViewProducts;
     if (item.title === "Invoices") return userPermissions.canViewInvoices;
@@ -98,14 +102,22 @@ const AppSidebar = () => {
     return true;
   });
 
-  const filteredAccountItems = accountItems.filter((item) => {
+  const filteredAccountItems = accountItems.map(item => ({
+    ...item,
+    url: item.url.replace("/admin", rolePrefix)
+  })).filter((item) => {
     if (item.title === "Settings") return userPermissions.canViewSettings;
     return true;
   });
 
+  const filteredUserSubMenus = userSubMenus.map(item => ({
+    ...item,
+    url: item.url.replace("/admin", rolePrefix)
+  }));
+
   const [usersOpen, setUsersOpen] = useState(true);
 
-  const isUsersActive = location.pathname.startsWith("/admin/users");
+  const isUsersActive = location.pathname.startsWith(`${rolePrefix}/users`);
 
   const handleLogout = () => {  
     localStorage.removeItem("authToken");
@@ -118,7 +130,7 @@ const AppSidebar = () => {
       {/* Header */}
       <SidebarHeader className="border-b border-slate-200 dark:border-slate-800">
         <div
-          onClick={() => navigate("/admin/dashboard")}
+          onClick={() => navigate(`${rolePrefix}/dashboard`)}
           className="flex cursor-pointer items-center gap-3 px-2 py-2 transition-opacity hover:opacity-80"
         >
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-slate-950 p-1 shadow-lg dark:bg-white">
@@ -151,10 +163,10 @@ const AppSidebar = () => {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={location.pathname === "/admin/dashboard"}
+                  isActive={location.pathname === `${rolePrefix}/dashboard`}
                   className="h-12 text-base"
                 >
-                  <Link to="/admin/dashboard">
+                  <Link to={`${rolePrefix}/dashboard`}>
                     <LayoutDashboard className="h-5 w-5" />
                     <span>Dashboard</span>
                   </Link>
@@ -183,7 +195,7 @@ const AppSidebar = () => {
                   {usersOpen && (
                     <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-white/10">
                       <div className="space-y-1">
-                        {userSubMenus.map((item) => {
+                        {filteredUserSubMenus.map((item) => {
                           const isActive = location.pathname === item.url;
 
                           return (
@@ -230,10 +242,10 @@ const AppSidebar = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={location.pathname === "/admin/audit-logs"}
+                    isActive={location.pathname === `${rolePrefix}/audit-logs`}
                     className="h-12 text-base"
                   >
-                    <Link to="/admin/audit-logs">
+                    <Link to={`${rolePrefix}/audit-logs`}>
                       <FileText className="h-5 w-5" />
                       <span>Audit Logs</span>
                     </Link>
