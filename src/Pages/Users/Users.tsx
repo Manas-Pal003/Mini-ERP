@@ -1,4 +1,5 @@
 import PageSkeleton from "@/components/common/PageSkeleton";
+import { getCurrentPermissions } from "@/lib/permissions";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import AccessDenied from "@/components/common/AccessDenied";
 
 type UserRole = "Admin" | "Manager" | "Staff" | "Accountant";
 
@@ -127,6 +129,12 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 export default function Users() {
+  const userPermissions = getCurrentPermissions();
+
+  if (!userPermissions.canViewUsers) {
+    return <AccessDenied />;
+  }
+
   const location = useLocation();
 
   const [loading, setLoading] = useState(true);
@@ -166,6 +174,10 @@ export default function Users() {
       localStorage.setItem("users", JSON.stringify(users));
     }
   }, [users, loading]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [editingUserId]);
 
   const getRoleFromPath = (): UserRole | "All" => {
     if (location.pathname.includes("/admins")) return "Admin";
@@ -309,16 +321,19 @@ export default function Users() {
             </p>
           </div>
 
-          <Button
-            onClick={() => {
-              resetForm();
-              setOpen(true);
-            }}
-            className="gap-2 rounded-xl bg-blue-600 px-5 hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4" />
-            Add User
-          </Button>
+          {/* Add User Button only show when user has permission */}
+          {userPermissions.canCreate && (
+            <Button
+              onClick={() => {
+                resetForm();
+                setOpen(true);
+              }}
+              className="gap-2 rounded-xl bg-blue-600 px-5 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4" />
+              Add User
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -449,15 +464,20 @@ export default function Users() {
 
                       <td className="px-4 py-4">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditUser(item)}
-                            className="h-8 rounded-lg border-blue-200 px-3 text-blue-600 hover:bg-blue-50"
+                          {/* Edit Button only show when user has permission */}
+                          {userPermissions.canEdit && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditUser(item)}
+                              className="h-8 rounded-lg border-blue-200 px-3 text-blue-600 hover:bg-blue-50"
                           >
                             Edit
                           </Button>
+                          )}
 
+                          {/* Delete Button only show when user has permission */}
+                          {userPermissions.canDelete && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -466,6 +486,7 @@ export default function Users() {
                           >
                             Delete
                           </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

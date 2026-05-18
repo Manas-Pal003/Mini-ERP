@@ -2,6 +2,7 @@ import PageSkeleton from "@/components/common/PageSkeleton";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getCurrentPermissions } from "@/lib/permissions";
 
 import {
   ReceiptText,
@@ -337,6 +338,7 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
 }
 
 export default function Expenses() {
+  const userPermissions = getCurrentPermissions();
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -373,6 +375,9 @@ export default function Expenses() {
       localStorage.setItem("expenses", JSON.stringify(expenses));
     }
   }, [expenses, loading]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [editingExpenseId]);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -511,6 +516,8 @@ export default function Expenses() {
             </p> */}
           </div>
 
+          {/* Add expense button only show when user has permission */}
+          {userPermissions.canCreate && (
           <Button
             onClick={() => {
               resetForm();
@@ -521,6 +528,7 @@ export default function Expenses() {
             <Plus className="h-4 w-4" />
             Add Expense
           </Button>
+          )}
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -742,6 +750,7 @@ export default function Expenses() {
 
                           <td className="px-4 py-4">
                             <div className="flex justify-end gap-2">
+                              {userPermissions.canEdit && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -750,7 +759,8 @@ export default function Expenses() {
                               >
                                 Edit
                               </Button>
-
+                              )}
+                              {userPermissions.canDelete && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -759,6 +769,7 @@ export default function Expenses() {
                               >
                                 Delete
                               </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

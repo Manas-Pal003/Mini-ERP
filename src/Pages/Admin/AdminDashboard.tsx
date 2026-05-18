@@ -8,6 +8,7 @@ import {
   MoreVertical,
   ChevronDown,
 } from "lucide-react";
+import { getCurrentPermissions } from "@/lib/permissions";
 
 import {
   Area,
@@ -164,6 +165,7 @@ const activities = [
     time: "12 min ago",
     icon: Users,
     color: "blue",
+    permission: "canViewUsers",
   },
   {
     title: "Invoice marked as paid",
@@ -171,6 +173,7 @@ const activities = [
     time: "36 min ago",
     icon: FileText,
     color: "green",
+    permission: "canViewInvoices",
   },
   {
     title: "Product stock updated",
@@ -178,6 +181,7 @@ const activities = [
     time: "1 hr ago",
     icon: Package,
     color: "orange",
+    permission: "canViewProducts",
   },
   {
     title: "Expense submitted",
@@ -185,6 +189,7 @@ const activities = [
     time: "2 hrs ago",
     icon: ReceiptText,
     color: "purple",
+    permission: "canViewExpenses",
   },
 ];
 
@@ -220,8 +225,8 @@ function StatusBadge({ status }: { status: string }) {
     status === "Paid"
       ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300"
       : status === "Pending"
-      ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
-      : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
+        ? "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300"
+        : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
 
   return (
     <span className={`rounded-md px-3 py-1 text-xs font-medium ${statusClass}`}>
@@ -279,6 +284,16 @@ function KpiCard({ item }: { item: (typeof kpiCards)[number] }) {
 }
 
 export default function AdminDashboard() {
+  const userPermissions = getCurrentPermissions();
+
+  const filteredKpiCards = kpiCards.filter((card) => {
+    if (card.title === "Total Users") return userPermissions.canViewUsers;
+    if (card.title === "Total Products") return userPermissions.canViewProducts;
+    if (card.title === "Total Invoices") return userPermissions.canViewInvoices;
+    if (card.title === "Total Expenses") return userPermissions.canViewExpenses;
+    return true;
+  });
+
   return (
     <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-4">

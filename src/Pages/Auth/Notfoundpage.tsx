@@ -35,7 +35,7 @@ export default function NotFound() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        <div className="mt-10  gap-4 sm:grid-cols-3 flex justify-center">
           <Link
             to="/login"
             className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-white/5 dark:bg-zinc-900/50"
@@ -53,7 +53,7 @@ export default function NotFound() {
             </p>
           </Link>
 
-          <Link
+          {/* <Link
             to="/admin/users"
             className="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md dark:border-white/5 dark:bg-zinc-900/50"
           >
@@ -68,7 +68,7 @@ export default function NotFound() {
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Check users and records
             </p>
-          </Link>
+          </Link> */}
 
           <Link
             to="/register"

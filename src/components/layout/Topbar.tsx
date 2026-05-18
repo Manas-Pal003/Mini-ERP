@@ -38,7 +38,10 @@ export default function Topbar() {
   const location = useLocation();
   const { setTheme, theme } = useTheme();
 
-  const pageTitle = pageTitles[location.pathname] || "Dashboard";
+  let pageTitle = pageTitles[location.pathname] || "Dashboard";
+  if (location.pathname === "/admin/invoices" && location.search.includes("view=")) {
+    pageTitle = "Invoice Details";
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");

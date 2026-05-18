@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { getCurrentPermissions } from "@/lib/permissions";
 import {
   Sidebar,
   SidebarContent,
@@ -74,7 +74,7 @@ const userSubMenus = [
 const accountItems = [
   // {
   //   title: "Profile",
-  //   url: "/admin/profile",
+  //   url: "/admin/profile", 
   //   icon: User,
   // },
   {
@@ -85,15 +85,31 @@ const accountItems = [
 ];
 
 const AppSidebar = () => {
+  const userPermissions = getCurrentPermissions();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.title === "Users") return userPermissions.canViewUsers;
+    if (item.title === "Products") return userPermissions.canViewProducts;
+    if (item.title === "Invoices") return userPermissions.canViewInvoices;
+    if (item.title === "Expenses") return userPermissions.canViewExpenses;
+
+    return true;
+  });
+
+  const filteredAccountItems = accountItems.filter((item) => {
+    if (item.title === "Settings") return userPermissions.canViewSettings;
+    return true;
+  });
 
   const [usersOpen, setUsersOpen] = useState(true);
 
   const isUsersActive = location.pathname.startsWith("/admin/users");
 
-  const handleLogout = () => {
+  const handleLogout = () => {  
     localStorage.removeItem("authToken");
+    localStorage.removeItem("currentUser");
     navigate("/login");
   };
 
@@ -146,49 +162,51 @@ const AppSidebar = () => {
               </SidebarMenuItem>
 
               {/* Users Dropdown */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  type="button"
-                  isActive={isUsersActive}
-                  onClick={() => setUsersOpen(!usersOpen)}
-                  className="h-12 text-base"
-                >
-                  <Users className="h-5 w-5" />
+              {userPermissions.canViewUsers && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    type="button"
+                    isActive={isUsersActive}
+                    onClick={() => setUsersOpen(!usersOpen)}
+                    className="h-12 text-base"
+                  >
+                    <Users className="h-5 w-5" />
 
-                  <span>Users</span>
+                    <span>Users</span>
 
-                  <ChevronDown
-                    className={`ml-auto h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""
-                      }`}
-                  />
-                </SidebarMenuButton>
+                    <ChevronDown
+                      className={`ml-auto h-4 w-4 transition-transform ${usersOpen ? "rotate-180" : ""
+                        }`}
+                    />
+                  </SidebarMenuButton>
 
-                {usersOpen && (
-                  <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-white/10">
-                    <div className="space-y-1">
-                      {userSubMenus.map((item) => {
-                        const isActive = location.pathname === item.url;
+                  {usersOpen && (
+                    <div className="ml-5 mt-2 border-l border-slate-200 pl-5 dark:border-white/10">
+                      <div className="space-y-1">
+                        {userSubMenus.map((item) => {
+                          const isActive = location.pathname === item.url;
 
-                        return (
-                          <Link
-                            key={item.title}
-                            to={item.url}
-                            className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
-                                ? "bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white"
-                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
-                              }`}
-                          >
-                            {item.title}
-                          </Link>
-                        );
-                      })}
+                          return (
+                            <Link
+                              key={item.title}
+                              to={item.url}
+                              className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
+                                  ? "bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white"
+                                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+                                }`}
+                            >
+                              {item.title}
+                            </Link>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </SidebarMenuItem>
+                  )}
+                </SidebarMenuItem>
+              )}
 
               {/* Other Main Menu Items */}
-              {menuItems.slice(1).map((item) => {
+              {filteredMenuItems.slice(1).map((item) => {
                 const isActive = location.pathname === item.url;
 
                 return (
@@ -208,18 +226,20 @@ const AppSidebar = () => {
               })}
 
               {/* Audit Logs */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={location.pathname === "/admin/audit-logs"}
-                  className="h-12 text-base"
-                >
-                  <Link to="/admin/audit-logs">
-                    <FileText className="h-5 w-5" />
-                    <span>Audit Logs</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {userPermissions.canViewAuditLogs && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === "/admin/audit-logs"}
+                    className="h-12 text-base"
+                  >
+                    <Link to="/admin/audit-logs">
+                      <FileText className="h-5 w-5" />
+                      <span>Audit Logs</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -232,7 +252,7 @@ const AppSidebar = () => {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {accountItems.map((item) => {
+              {filteredAccountItems.map((item) => {
                 const isActive = location.pathname === item.url;
 
                 return (
@@ -272,7 +292,7 @@ const AppSidebar = () => {
                 System Admin
               </p>
 
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-1 flex  flex-wrap gap-1">
                 <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-blue-600 dark:bg-blue-950 dark:text-blue-300">
                   Admin
                 </span>

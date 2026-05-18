@@ -19,8 +19,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AccessDenied from "@/components/common/AccessDenied";
+import { getCurrentPermissions } from "@/lib/permissions";
 
 export default function Settings() {
+  const userPermissions = getCurrentPermissions();
+
+  if (!userPermissions.canViewSettings) {
+    return <AccessDenied />;
+  }
+
   const [profile, setProfile] = useState({
     fullName: "System Admin",
     email: "admin@invoice-system.local",

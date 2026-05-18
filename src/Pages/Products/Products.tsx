@@ -2,6 +2,7 @@ import PageSkeleton from "@/components/common/PageSkeleton";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getCurrentPermissions } from "@/lib/permissions";
 
 import {
   Package,
@@ -43,6 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import AccessDenied from "@/components/common/AccessDenied";
 
 type Product = {
   sku: string;
@@ -311,6 +313,13 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
 }
 
 export default function Products() {
+
+  const userPermissions = getCurrentPermissions();
+
+  if (!userPermissions.canViewProducts) {
+    return <AccessDenied />;
+  }
+
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -348,6 +357,9 @@ export default function Products() {
       localStorage.setItem("products", JSON.stringify(products));
     }
   }, [products, loading]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [editingProductId]);
 
   const resetForm = () => {
     setFormData({
@@ -457,7 +469,9 @@ export default function Products() {
             </p> */}
           </div>
 
-          <Button
+          {/* Add Button only show when user has permission */}
+          {userPermissions.canCreate && (
+            <Button
             onClick={() => {
               resetForm();
               setOpen(true);
@@ -467,6 +481,7 @@ export default function Products() {
             <Plus className="h-4 w-4" />
             Add Product
           </Button>
+          )}
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -665,6 +680,9 @@ export default function Products() {
 
                         <td className="px-4 py-4">
                           <div className="flex justify-end gap-2">
+
+                            {/* Edit button only show when user has permission */}
+                            {userPermissions.canEdit && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -673,7 +691,10 @@ export default function Products() {
                             >
                               Edit
                             </Button>
-
+                            )}
+                            
+                            {/* Delete button only show when user has permission */}
+                            {userPermissions.canDelete && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -682,6 +703,7 @@ export default function Products() {
                             >
                               Delete
                             </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

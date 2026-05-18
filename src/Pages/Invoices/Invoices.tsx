@@ -2,6 +2,8 @@ import PageSkeleton from "@/components/common/PageSkeleton";
 import DeleteConfirmDialog from "@/components/common/DeleteConfirmDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getCurrentPermissions } from "@/lib/permissions";
+import { useSearchParams } from "react-router-dom";
 
 import {
   FileText,
@@ -15,6 +17,12 @@ import {
   Send,
   IndianRupee,
   PencilLine,
+  ArrowLeft,
+  Download,
+  Building2,
+  Calendar,
+  Coins,
+  Activity,
 } from "lucide-react";
 
 import {
@@ -273,12 +281,22 @@ function StatCard({ item }: { item: (typeof stats)[number] }) {
 }
 
 export default function Invoices() {
+  const userPermissions = getCurrentPermissions();
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewInvoiceId = searchParams.get("view");
+  const selectedInvoice = invoices.find((inv) => inv.invoice === viewInvoiceId) || null;
+  const isViewOpen = !!selectedInvoice;
+
+  const handleViewInvoice = (invoice: Invoice) => {
+    setSearchParams({ view: invoice.invoice });
+  };
 
   const [formData, setFormData] = useState({
     customer: "",
@@ -309,6 +327,10 @@ export default function Invoices() {
       localStorage.setItem("invoices", JSON.stringify(invoices));
     }
   }, [invoices, loading]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [viewInvoiceId]);
 
   const resetForm = () => {
     setFormData({
@@ -396,6 +418,331 @@ export default function Invoices() {
     return <PageSkeleton />;
   }
 
+  if (selectedInvoice && isViewOpen) {
+    const parseAmount = (amtStr: string) => {
+      const num = parseFloat(amtStr.replace(/[₹,]/g, ""));
+      return isNaN(num) ? 0 : num;
+    };
+
+    const totalAmt = parseAmount(selectedInvoice.amount);
+    const basicAmt = totalAmt / 1.28;
+    const gstAmt = totalAmt - basicAmt;
+
+    const formattedBasic = formatCurrency(Math.round(basicAmt));
+    const formattedGst = formatCurrency(Math.round(gstAmt));
+    const formattedTotal = selectedInvoice.amount;
+
+    return (
+      <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
+        <div className="mx-auto max-w-[1600px] space-y-6">
+          
+          {/* Header Action Bar */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => {
+                setSearchParams({});
+              }}
+              className="flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold transition-colors cursor-pointer text-sm bg-transparent border-none p-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </button>
+
+            <Button
+              onClick={() => {
+                toast.success("Downloading Invoice PDF...");
+              }}
+              className="gap-2 rounded-xl border border-blue-200 bg-white text-blue-600 hover:bg-blue-50/50 dark:border-white/5 dark:bg-zinc-900/50 dark:text-blue-400 dark:hover:bg-zinc-800/50 px-5 shadow-sm"
+            >
+              <Download className="h-4 w-4" />
+              Download Invoice PDF
+            </Button>
+          </div>
+
+          {/* Balance Card */}
+          <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50">
+            <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 dark:bg-blue-500/10">
+                  <FileText className="h-8 w-8 text-blue-500" />
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-50">
+                    Balance
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    CREATED ON {selectedInvoice.date.toUpperCase()}, 01:36 PM
+                  </p>
+                  <div className="mt-2.5">
+                    <span className="rounded-full bg-amber-500/15 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      UNDER PROCESS
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile Card */}
+              <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4 dark:border-white/5 dark:bg-zinc-900/40">
+                <div className="text-right">
+                  <p className="text-sm font-bold text-slate-950 dark:text-slate-50 uppercase tracking-tight">
+                    System Admin
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    admin
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full border-2 border-red-500 p-0.5">
+                  <img
+                    src="https://i.pravatar.cc/100?img=12"
+                    alt="System Admin"
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Details Grid */}
+          <div className="grid gap-6 xl:grid-cols-[1.75fr_1fr]">
+            
+            {/* Left Column */}
+            <div className="space-y-6">
+              {/* Project & Classification Card */}
+              <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-6">
+                <CardHeader className="p-0 pb-6 border-b border-slate-100 dark:border-white/5">
+                  <CardTitle className="text-lg font-bold text-slate-950 dark:text-slate-50 flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-slate-400" />
+                    Project & Classification
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="p-0 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-4">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Project Name
+                      </span>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {selectedInvoice.customer.toUpperCase()}
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        State
+                      </span>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        Delhi
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Bill Category
+                      </span>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        Restoration Supply
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Milestone
+                      </span>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        90%
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Invoice Dates Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-5 text-center flex flex-col items-center justify-center">
+                  <Calendar className="mx-auto h-5 w-5 text-slate-400" />
+                  <span className="mt-3 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Invoice Date
+                  </span>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {selectedInvoice.date}
+                  </p>
+                </Card>
+
+                <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-5 text-center flex flex-col items-center justify-center">
+                  <Send className="mx-auto h-5 w-5 text-slate-400" />
+                  <span className="mt-3 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Submission
+                  </span>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {selectedInvoice.date}
+                  </p>
+                </Card>
+
+                <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-5 text-center flex flex-col items-center justify-center">
+                  <Clock3 className="mx-auto h-5 w-5 text-slate-400" />
+                  <span className="mt-3 block text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Payment Date
+                  </span>
+                  <p className="mt-1 text-sm font-semibold text-slate-400 dark:text-slate-500">
+                    -
+                  </p>
+                </Card>
+              </div>
+
+              {/* Deductions & Adjustments Card */}
+              <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-6">
+                <div className="flex items-center justify-between pb-6 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="text-lg font-bold text-slate-950 dark:text-slate-50 flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-slate-400" />
+                    Deductions & Adjustments
+                  </h3>
+                  <span className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                    TOTAL: ₹0.00
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-white/5 dark:bg-zinc-900/40 text-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Retention
+                    </span>
+                    <p className="mt-1.5 text-sm font-bold text-rose-600 dark:text-rose-400">
+                      ₹0.00
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-white/5 dark:bg-zinc-900/40 text-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      TDS
+                    </span>
+                    <p className="mt-1.5 text-sm font-bold text-rose-600 dark:text-rose-400">
+                      ₹0.00
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-white/5 dark:bg-zinc-900/40 text-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      GST TDS
+                    </span>
+                    <p className="mt-1.5 text-sm font-bold text-rose-600 dark:text-rose-400">
+                      ₹0.00
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Financial Summary Card */}
+              <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-6">
+                <CardHeader className="p-0 pb-6 border-b border-slate-100 dark:border-white/5">
+                  <CardTitle className="text-lg font-bold text-slate-950 dark:text-slate-50 flex items-center gap-2">
+                    <IndianRupee className="h-5 w-5 text-slate-400" />
+                    Financial Summary
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="p-0 pt-6 space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      Basic Amount
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                      {formattedBasic}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      GST (28.00%)
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                      {formattedGst}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+                    <span className="text-base font-bold text-slate-900 dark:text-slate-100">
+                      Total Amount
+                    </span>
+                    <span className="text-xl font-black text-blue-600 dark:text-blue-400">
+                      {formattedTotal}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Payment Status Card */}
+              <Card className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/5 dark:bg-zinc-900/50 p-6">
+                <CardHeader className="p-0 pb-6 border-b border-slate-100 dark:border-white/5">
+                  <CardTitle className="text-lg font-bold text-slate-950 dark:text-slate-50 flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-slate-400" />
+                    Payment Status
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="p-0 pt-6 space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      Passed Amount
+                    </span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                      ₹0.00
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">
+                      Total Deductions
+                    </span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      ₹0.00
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5">
+                    <span className="text-base font-bold text-slate-900 dark:text-slate-100">
+                      Net Payable
+                    </span>
+                    <span className="text-lg font-black text-slate-900 dark:text-slate-100">
+                      {formattedTotal}
+                    </span>
+                  </div>
+
+                  {/* Payment Badges (Received/Pending) */}
+                  <div className="grid grid-cols-2 gap-4 pt-4">
+                    <div className="rounded-xl bg-emerald-500/10 p-3 text-center border border-emerald-500/10">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                        Received
+                      </span>
+                      <p className="mt-1 text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                        {selectedInvoice.status === "Paid" ? formattedTotal : "₹0.00"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-blue-500/10 p-3 text-center border border-blue-500/10">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        Pending
+                      </span>
+                      <p className="mt-1 text-sm font-extrabold text-blue-600 dark:text-blue-400">
+                        {selectedInvoice.status === "Paid" ? "₹0.00" : formattedTotal}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
@@ -410,6 +757,8 @@ export default function Invoices() {
             </p> */}
           </div>
 
+          {/* Create Button only show when user has permission */}
+          {userPermissions.canCreate && (
           <Button
             onClick={() => {
               resetForm();
@@ -420,6 +769,7 @@ export default function Invoices() {
             <Plus className="h-4 w-4" />
             Create Invoice
           </Button>
+        )}
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -591,7 +941,12 @@ export default function Invoices() {
                         className="group border-t border-slate-100 text-sm transition-colors hover:bg-slate-50/50 dark:border-white/5 dark:hover:bg-slate-800/30"
                       >
                         <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
-                          {item.invoice}
+                          <button
+                            onClick={() => handleViewInvoice(item)}
+                            className="font-semibold text-purple-600 hover:text-purple-700 hover:underline dark:text-purple-400 dark:hover:text-purple-300 transition-all cursor-pointer bg-transparent border-none p-0 text-left outline-none"
+                          >
+                            {item.invoice}
+                          </button>
                         </td>
 
                         <td className="px-4 py-4 text-slate-900 dark:text-slate-100">
@@ -612,6 +967,8 @@ export default function Invoices() {
 
                         <td className="px-4 py-4">
                           <div className="flex justify-end gap-2">
+                            {/* Edit Button only show when user has permission */}
+                            {userPermissions.canEdit && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -620,7 +977,10 @@ export default function Invoices() {
                             >
                               Edit
                             </Button>
+                            )}
 
+                            {/* Delete Button only show when user has permission */}
+                            {userPermissions.canDelete && (
                             <Button
                               variant="outline"
                               size="sm"
@@ -629,6 +989,7 @@ export default function Invoices() {
                             >
                               Delete
                             </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -784,6 +1145,8 @@ export default function Invoices() {
           </div>
         </DialogContent>
       </Dialog>
+
+
 
       <DeleteConfirmDialog
         open={isDeleteDialogOpen}

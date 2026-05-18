@@ -41,17 +41,32 @@ export default function Login() {
         setIsLoading(true);
 
         setTimeout(() => {
+            let role = "Admin";
+            let name = "System Admin";
+
+            const emailLower = formData.email.toLowerCase();
+            if (emailLower.includes("manager")) {
+                role = "Manager";
+                name = "Project Manager";
+            } else if (emailLower.includes("staff")) {
+                role = "Staff";
+                name = "Operations Staff";
+            } else if (emailLower.includes("accountant")) {
+                role = "Accountant";
+                name = "Senior Accountant";
+            }
+
             localStorage.setItem("authToken", "mini-erp-admin-token");
             localStorage.setItem(
                 "currentUser",
                 JSON.stringify({
-                    name: "System Admin",
+                    name: name,
                     email: formData.email,
-                    role: "Admin",
+                    role: role,
                 })
             );
 
-            toast.success("Login successful! Welcome back.");
+            toast.success(`Logged in as ${role}! Welcome back.`);
             navigate("/admin/dashboard");
             setIsLoading(false);
         }, 1200);
@@ -237,23 +252,50 @@ export default function Login() {
                                         <CheckCircle2 className="h-4 w-4" />
                                     </div>
                                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                        Demo Credentials
+                                        Demo Roles Quick Login
                                     </p>
                                 </div>
 
-                                <div className="space-y-1 text-sm text-slate-500 dark:text-slate-400">
-                                    <p>
-                                        Email:{" "}
-                                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                                            admin@mini-erp.local
-                                        </span>
-                                    </p>
-                                    <p>
-                                        Password:{" "}
-                                        <span className="font-medium text-slate-800 dark:text-slate-200">
-                                            admin123
-                                        </span>
-                                    </p>
+                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setFormData({ email: "admin@mini-erp.local", password: "admin123" })}
+                                        className="h-9 text-xs font-bold rounded-xl border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                                    >
+                                        Admin
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setFormData({ email: "manager@mini-erp.local", password: "admin123" })}
+                                        className="h-9 text-xs font-bold rounded-xl border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                                    >
+                                        Manager
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setFormData({ email: "staff@mini-erp.local", password: "admin123" })}
+                                        className="h-9 text-xs font-bold rounded-xl border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                                    >
+                                        Staff
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setFormData({ email: "accountant@mini-erp.local", password: "admin123" })}
+                                        className="h-9 text-xs font-bold rounded-xl border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800"
+                                    >
+                                        Accountant
+                                    </Button>
                                 </div>
                             </div>
                         </div>

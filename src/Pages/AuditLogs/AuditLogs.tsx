@@ -22,6 +22,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AccessDenied from "@/components/common/AccessDenied";
+import { getCurrentPermissions } from "@/lib/permissions";
 
 type AuditLog = {
   id: string;
@@ -170,6 +172,13 @@ function ActionBadge({ action }: { action: AuditLog["action"] }) {
 }
 
 export default function AuditLogs() {
+
+  const userPermissions = getCurrentPermissions();
+
+  if (!userPermissions.canViewAuditLogs) {
+    return <AccessDenied />;
+  }
+
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [search, setSearch] = useState("");
@@ -199,6 +208,10 @@ export default function AuditLogs() {
       localStorage.setItem("auditLogs", JSON.stringify(logs));
     }
   }, [logs, loading]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [logs]);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
