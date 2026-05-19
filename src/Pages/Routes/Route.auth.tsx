@@ -2,6 +2,7 @@ import { type RouteObject } from "react-router-dom"
 import Login from "../Auth/Login"
 import Register from "../Auth/Register"
 import NotFound from "../Auth/Notfoundpage"
+import Unauthorized from "../Auth/Unauthorized"
 const AuthRoute: RouteObject[] =[{
   
   path: '/',
@@ -16,6 +17,12 @@ const AuthRoute: RouteObject[] =[{
   
   path: '/register',
   element: <Register />,
+},
+
+{
+  
+  path: '/unauthorized',
+  element: <Unauthorized />,
 },
 {
     path: "*",

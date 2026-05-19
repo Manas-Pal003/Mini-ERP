@@ -11,7 +11,7 @@ import AuditLogs from "@/Pages/AuditLogs/AuditLogs";
 
 export const adminRoutes = {
   path: "/admin",
-  element: <ProtectedRoute />,
+  element: <ProtectedRoute role="Admin" />,
   children: [
     {
       element: <DashboardLayout />,

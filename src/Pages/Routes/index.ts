@@ -1,14 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import AuthRoute from "./Route.auth";
 import { adminRoutes } from "./Route.admin";
+import { staffRoutes } from "./Route.staff";
+import { ManagerRoutes } from "./Route.manager";
 
 const managerRoutes = {
-  ...adminRoutes,
+  ...ManagerRoutes,
   path: "/manager",
 };
 
-const staffRoutes = {
-  ...adminRoutes,
+const staffRoute = {
+  ...staffRoutes,
   path: "/staff",
 };
 
@@ -21,6 +23,6 @@ export const router = createBrowserRouter([
   ...AuthRoute,
   adminRoutes,
   managerRoutes,
-  staffRoutes,
+  staffRoute,
   accountantRoutes,
 ]);

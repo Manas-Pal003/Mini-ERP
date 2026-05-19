@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import {
@@ -85,6 +86,7 @@ const accountItems = [
 ];
 
 const AppSidebar = () => {
+  const { setOpenMobile } = useSidebar();
   const userPermissions = getCurrentPermissions();
   const location = useLocation();
   const navigate = useNavigate();
@@ -126,18 +128,19 @@ const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar>
       {/* Header */}
       <SidebarHeader className="border-b border-slate-200 dark:border-slate-800">
         <div
-          onClick={() => navigate(`${rolePrefix}/dashboard`)}
+          onClick={() => { navigate(`${rolePrefix}/dashboard`); setOpenMobile(false); }}
           className="flex cursor-pointer items-center gap-3 px-2 py-2 transition-opacity hover:opacity-80"
         >
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-slate-950 p-1 shadow-lg dark:bg-white">
             <img src={Logo} alt="Mini ERP Logo" className="h-full w-full object-contain" />
           </div>
 
-          <div className="flex flex-col">
+          
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-lg font-bold text-slate-950 dark:text-slate-50">
               Mini ERP
             </span>
@@ -166,7 +169,7 @@ const AppSidebar = () => {
                   isActive={location.pathname === `${rolePrefix}/dashboard`}
                   className="h-12 text-base"
                 >
-                  <Link to={`${rolePrefix}/dashboard`}>
+                  <Link to={`${rolePrefix}/dashboard`} onClick={() => setOpenMobile(false)}>
                     <LayoutDashboard className="h-5 w-5" />
                     <span>Dashboard</span>
                   </Link>
@@ -202,6 +205,7 @@ const AppSidebar = () => {
                             <Link
                               key={item.title}
                               to={item.url}
+                              onClick={() => setOpenMobile(false)}
                               className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${isActive
                                   ? "bg-slate-100 text-slate-950 dark:bg-slate-800 dark:text-white"
                                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -228,7 +232,7 @@ const AppSidebar = () => {
                       isActive={isActive}
                       className="h-12 text-base"
                     >
-                      <Link to={item.url}>
+                      <Link to={item.url} onClick={() => setOpenMobile(false)}>
                         <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                       </Link>
@@ -245,7 +249,7 @@ const AppSidebar = () => {
                     isActive={location.pathname === `${rolePrefix}/audit-logs`}
                     className="h-12 text-base"
                   >
-                    <Link to={`${rolePrefix}/audit-logs`}>
+                    <Link to={`${rolePrefix}/audit-logs`} onClick={() => setOpenMobile(false)}>
                       <FileText className="h-5 w-5" />
                       <span>Audit Logs</span>
                     </Link>
@@ -274,7 +278,7 @@ const AppSidebar = () => {
                       isActive={isActive}
                       className="h-12 text-base"
                     >
-                      <Link to={item.url}>
+                      <Link to={item.url} onClick={() => setOpenMobile(false)}>
                         <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                       </Link>

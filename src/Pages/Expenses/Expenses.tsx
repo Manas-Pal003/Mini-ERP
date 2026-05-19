@@ -505,7 +505,7 @@ export default function Expenses() {
   return (
     <main className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 dark:bg-black">
       <div className="mx-auto max-w-[1600px] space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             {/* <h1 className="text-3xl font-semibold text-slate-950 dark:text-slate-50">
               Expenses

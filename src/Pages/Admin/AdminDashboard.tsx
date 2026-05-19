@@ -489,8 +489,8 @@ export default function AdminDashboard() {
             </CardHeader>
 
             <CardContent>
-              <div className="overflow-hidden rounded-xl border border-slate-100 dark:border-slate-800">
-                <table className="w-full text-left">
+              <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+                <table className="w-full min-w-[700px] text-left">
                   <thead>
                     <tr className="border-b border-slate-200/60 bg-slate-50/50 text-xs font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800/60 dark:bg-slate-900/50 dark:text-slate-400">
                       <th className="px-4 py-4 font-medium">Invoice #</th>
