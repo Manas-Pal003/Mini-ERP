@@ -315,7 +315,7 @@ export default function AdminDashboard() {
 
         {/* KPI cards */}
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {kpiCards.map((item) => (
+          {filteredKpiCards.map((item) => (
             <KpiCard key={item.title} item={item} />
           ))}
         </div>
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
                     width={90}
                   />
                   <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: any) => formatCurrency(Number(value))}
                     contentStyle={{
                       borderRadius: "12px",
                       border: "1px solid #e2e8f0",

@@ -12,7 +12,6 @@ import {
   TriangleAlert,
   Plus,
   ChevronDown,
-  MoreVertical,
   ReceiptText,
   Send,
   IndianRupee,
@@ -823,7 +822,7 @@ export default function Invoices() {
                     tickFormatter={formatCurrency}
                     width={90}
                   />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
 
                   <Area
                     type="monotone"

@@ -7,12 +7,10 @@ import {
   ReceiptText,
   Wallet,
   Clock3,
-  CircleCheckBig,
   AlertTriangle,
   TrendingUp,
   ArrowUpRight,
   CalendarDays,
-  BarChart3,
   ShieldCheck,
   ClipboardCheck,
 } from "lucide-react";
@@ -350,7 +348,7 @@ export default function ManagerDashboard() {
                     tickFormatter={formatCurrency}
                     width={90}
                   />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip formatter={(value: any) => formatCurrency(Number(value))} />
 
                   <Area
                     type="monotone"

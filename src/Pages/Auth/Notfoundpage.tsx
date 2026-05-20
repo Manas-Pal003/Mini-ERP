@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   Home,
-  LayoutDashboard,
   Search,
 } from "lucide-react";
 

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  Grid2X2,
   User,
   LockKeyhole,
   Mail,

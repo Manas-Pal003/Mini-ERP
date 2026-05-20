@@ -38,7 +38,7 @@ const pageTitles: Record<string, string> = {
 export default function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setTheme, theme } = useTheme();
+  const { setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
   const rolePrefix = `/${getCurrentUserRole().toLowerCase()}`;
 

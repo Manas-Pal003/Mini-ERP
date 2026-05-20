@@ -20,7 +20,6 @@ import {
   Package,
   Receipt,
   Wallet,
-  User,
   Settings,
   LogOut,
   ChevronDown,
